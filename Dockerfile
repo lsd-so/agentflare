@@ -1,23 +1,30 @@
-# syntax=docker/dockerfile:1
+FROM alpine:3.19
 
-FROM golang:1.24-alpine AS build
+# Installs latest Chromium package.
+RUN apk upgrade --no-cache --available \
+    && apk add --no-cache \
+      chromium-swiftshader \
+      ttf-freefont \
+      font-noto-emoji \
+    && apk add --no-cache \
+      --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community \
+      font-wqy-zenhei
 
-# Set destination for COPY
-WORKDIR /app
+COPY local.conf /etc/fonts/local.conf
 
-# Download any Go modules
-COPY container_src/go.mod ./
-RUN go mod download
+# Add Chrome as a user
+RUN mkdir -p /usr/src/app \
+    && adduser -D chrome \
+    && chown -R chrome:chrome /usr/src/app
+# Run Chrome as non-privileged
+USER chrome
+WORKDIR /usr/src/app
 
-# Copy container source code
-COPY container_src/*.go ./
+ENV CHROME_BIN=/usr/bin/chromium-browser \
+    CHROME_PATH=/usr/lib/chromium/
 
-# Build
-RUN CGO_ENABLED=0 GOOS=linux go build -o /server
+EXPOSE 9222
 
-FROM scratch
-COPY --from=build /server /server
-EXPOSE 8080
-
-# Run
-CMD ["/server"]
+# Autorun chrome headless
+# ENV CHROMIUM_FLAGS="--disable-software-rasterizer --disable-dev-shm-usage --remote-debugging-address=0.0.0.0 --remote-debugging-port=9222"
+ENTRYPOINT ["chromium-browser", "--headless", "--disable-software-rasterizer", "--disable-dev-shm-usage", "--no-sandbox", "--remote-debugging-address=0.0.0.0", "--remote-debugging-port=9222", "--user=root", "--proxy-bypass-list='<-loopback>'"]

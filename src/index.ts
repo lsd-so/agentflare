@@ -3,7 +3,7 @@ import { Hono } from "hono";
 
 export class MyContainer extends Container {
   // Port the container listens on (default: 8080)
-  defaultPort = 8080;
+  defaultPort = 9222;
   // Time before container sleeps due to inactivity (default: 30s)
   sleepAfter = "2m";
   // Environment variables passed to the container
@@ -34,10 +34,10 @@ const app = new Hono<{
 app.get("/", (c) => {
   return c.text(
     "Available endpoints:\n" +
-      "GET /container/<ID> - Start a container for each ID with a 2m timeout\n" +
-      "GET /lb - Load balance requests over multiple containers\n" +
-      "GET /error - Start a container that errors (demonstrates error handling)\n" +
-      "GET /singleton - Get a single specific container instance",
+    "GET /container/<ID> - Start a container for each ID with a 2m timeout\n" +
+    "GET /lb - Load balance requests over multiple containers\n" +
+    "GET /error - Start a container that errors (demonstrates error handling)\n" +
+    "GET /singleton - Get a single specific container instance",
   );
 });
 
@@ -64,7 +64,24 @@ app.get("/lb", async (c) => {
 // Get a single container instance (singleton pattern)
 app.get("/singleton", async (c) => {
   const container = getContainer(c.env.MY_CONTAINER);
-  return await container.fetch(c.req.raw);
+  const modifiedRequest = new Request(c.req.raw, {
+    headers: {
+      ...Object.fromEntries(c.req.raw.headers.entries()),
+      "HOST": "localhost"
+    }
+  });
+  return await container.fetch(modifiedRequest);
+});
+
+app.get("/json/list", async (c) => {
+  const container = getContainer(c.env.MY_CONTAINER);
+  const modifiedRequest = new Request(c.req.raw, {
+    headers: {
+      ...Object.fromEntries(c.req.raw.headers.entries()),
+      "HOST": "localhost"
+    }
+  });
+  return await container.fetch(modifiedRequest);
 });
 
 export default app;

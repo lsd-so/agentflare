@@ -15,6 +15,7 @@
 	},
 	"containers": [
 		{
+			"name": "browserflare",
 			"class_name": "MyContainer",
 			"image": "./Dockerfile",
 			"max_instances": 10
