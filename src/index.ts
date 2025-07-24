@@ -3,7 +3,7 @@ import { Hono } from "hono";
 
 export class MyContainer extends Container {
   // Port the container listens on (default: 8080)
-  defaultPort = 9222;
+  defaultPort = 8080;
   // Time before container sleeps due to inactivity (default: 30s)
   sleepAfter = "2m";
   // Environment variables passed to the container
@@ -61,27 +61,36 @@ app.get("/lb", async (c) => {
   return await container.fetch(c.req.raw);
 });
 
+app.get("/original-headers", async (c) => {
+  return c.text(`Returning the original headers\n\n${JSON.stringify([...c.req.raw.headers])}`);
+});
+
+app.get("/headers", async (c) => {
+  const modifiedRequest = new Request(c.req.raw, {
+    headers: {
+      ...Object.fromEntries(c.req.raw.headers.entries()),
+      "host": "localhost"
+    }
+  });
+
+  return c.text(`Returning the modified header object?\n\n${JSON.stringify([...modifiedRequest.headers])}`);
+});
+
 // Get a single container instance (singleton pattern)
 app.get("/singleton", async (c) => {
   const container = getContainer(c.env.MY_CONTAINER);
   const modifiedRequest = new Request(c.req.raw, {
     headers: {
       ...Object.fromEntries(c.req.raw.headers.entries()),
-      "HOST": "localhost"
+      "host": "localhost"
     }
   });
   return await container.fetch(modifiedRequest);
 });
 
-app.get("/json/list", async (c) => {
+app.get("/json/version", async (c) => {
   const container = getContainer(c.env.MY_CONTAINER);
-  const modifiedRequest = new Request(c.req.raw, {
-    headers: {
-      ...Object.fromEntries(c.req.raw.headers.entries()),
-      "HOST": "localhost"
-    }
-  });
-  return await container.fetch(modifiedRequest);
+  return await container.fetch(c.req.raw);
 });
 
 export default app;
