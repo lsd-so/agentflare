@@ -38,6 +38,6 @@ WORKDIR $HOME
 
 EXPOSE $VNC_PORT $NOVNC_PORT
 
-COPY computer/supervisord.conf /etc/supervisord.conf
+COPY supervisord.conf /etc/supervisord.conf
 
 CMD ["sudo","/usr/bin/supervisord","-c","/etc/supervisord.conf"]
