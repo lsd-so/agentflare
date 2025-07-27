@@ -1,3 +1,36 @@
+## AGENT TODO
+
+- Architecture
+  - Top level agent (that does the work)
+  - call_browser_agent (tool that starts off agent for working with a browser)
+  - call_computer_agent (tool that starts off agent for working with a computer)
+  - call_serp_agent (tool that starts off agent for making requests to brave/duckduckgo)
+  
+- browser_agent
+  - has tools relating to iterating on puppeteer
+  - clears screenshot tool call and tool output when requesting a new screenshot
+
+- computer_agent
+  - has tools relating to iterating on computer with vnc
+  - clears screenshot tool call and tool output when requesting a new screenshot
+  
+- serp agent
+  - has one tool to perform request for SERP
+  - does NOT clear previous results (google fu)
+
+- Set up HTTP endpoints for computer container to
+  - Get screenshot as base64 string
+  - Do other actions as defined by computer use
+- Set up agent for specifically handling computer container usage (and ends up with string output)
+- Set up tools for interfacing with browser container
+
+- Make HTTP web app as part of supervisord
+  - This is interface to doing/reading things with computer
+- Make tools for interfacing with containers
+- Make tool for brave SERP (doesn't block bots)
+- Make simple loop to carry out a simple task (that's accessible via web app)
+- Bundle into MCP server that can also be deployed onto cloudflare or run locally
+
 # Containers Starter
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/templates/tree/main/containers-template)

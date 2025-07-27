@@ -4,7 +4,7 @@
  */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "browserflare",
+	"name": "agentflare",
 	"main": "src/index.ts",
 	"compatibility_date": "2025-05-23",
 	"compatibility_flags": [
@@ -16,23 +16,36 @@
 	"containers": [
 		{
 			"name": "browserflare",
-			"class_name": "MyContainer",
-			"image": "./Dockerfile",
-			"max_instances": 10
-		}
+			"class_name": "BrowserContainer",
+			"image": "./browser/Dockerfile",
+			"max_instances": 1,
+      			"instance_type": "standard",
+		},
+		{
+			"name": "computerflare",
+			"class_name": "ComputerContainer",
+			"image": "./computer/Dockerfile",
+			"max_instances": 1,
+			"instance_type": "standard",
+		},
 	],
 	"durable_objects": {
 		"bindings": [
 			{
-				"class_name": "MyContainer",
-				"name": "MY_CONTAINER"
+				"class_name": "BrowserContainer",
+				"name": "BROWSER_CONTAINER"
+			},
+			{
+				"class_name": "ComputerContainer",
+				"name": "COMPUTER_CONTAINER"
 			}
 		]
 	},
 	"migrations": [
 		{
 			"new_sqlite_classes": [
-				"MyContainer"
+				"BrowserContainer",
+				"ComputerContainer"
 			],
 			"tag": "v1"
 		}

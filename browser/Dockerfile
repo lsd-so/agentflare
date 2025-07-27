@@ -11,14 +11,14 @@ RUN apk upgrade --no-cache --available \
       --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community \
       font-wqy-zenhei
 
-COPY local.conf /etc/fonts/local.conf
+COPY browser/local.conf /etc/fonts/local.conf
 
 # Add Chrome as a user
 RUN mkdir -p /usr/src/app \
     && adduser -D chrome \
     && chown -R chrome:chrome /usr/src/app
 
-COPY nginx.conf /etc/nginx/nginx.conf
+COPY browser/nginx.conf /etc/nginx/nginx.conf
 
 RUN touch /var/log/nginx/error.log
 RUN touch /var/lib/nginx/logs/error.log
@@ -34,8 +34,4 @@ WORKDIR /usr/src/app
 ENV CHROME_BIN=/usr/bin/chromium-browser \
     CHROME_PATH=/usr/lib/chromium/
 
-EXPOSE 9222
-
-# Autorun chrome headless
-# ENV CHROMIUM_FLAGS="--disable-software-rasterizer --disable-dev-shm-usage --remote-debugging-address=0.0.0.0 --remote-debugging-port=9222"
 CMD nginx && chromium-browser --headless --disable-software-rasterizer --disable-dev-shm-usage --no-sandbox --remote-debugging-address=0.0.0.0 --remote-debugging-port=9222 --user=root --proxy-bypass-list='<-loopback>'
