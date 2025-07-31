@@ -1,6 +1,6 @@
 import { getContainer } from "@cloudflare/containers";
 import { AppBindings } from "../types";
-import puppeteer from 'puppeteer-core/lib/esm/puppeteer/puppeteer-core-browser.js';
+import puppeteer from 'puppeteer-core';
 import { generateText, tool } from 'ai';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { z } from 'zod';
