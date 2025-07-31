@@ -1,5 +1,5 @@
 import * as cheerio from 'cheerio';
-import { generateText } from 'ai';
+import { generateText, tool } from 'ai';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { z } from 'zod';
 
@@ -87,13 +87,16 @@ export class SerpAgent {
 
   private getSearchTools() {
     return {
-      search: {
+      search: tool({
         description: 'Search the web using Brave Search and get search results',
         parameters: z.object({
           query: z.string().describe('The search query'),
           maxResults: z.number().optional().describe('Maximum number of results to return (default: 10)')
-        })
-      }
+        }),
+        execute: async ({ query, maxResults = 10 }) => {
+          return await this.search(query, maxResults);
+        }
+      })
     };
   }
 
@@ -128,17 +131,7 @@ When users ask questions or request information, use the search tool to find rel
         ],
         tools,
         maxToolRoundtrips: 3,
-        toolChoice: 'auto',
-        onStepFinish: async (step) => {
-          if (step.toolCalls) {
-            for (const toolCall of step.toolCalls) {
-              if (toolCall.toolName === 'search') {
-                const result = await this.search(toolCall.args.query, toolCall.args.maxResults || 10);
-                toolCall.result = result;
-              }
-            }
-          }
-        }
+        toolChoice: 'auto'
       });
 
       // Extract search results from tool calls if any

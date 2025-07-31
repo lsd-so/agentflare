@@ -1,7 +1,7 @@
 import { getContainer } from "@cloudflare/containers";
 import { AppBindings } from "../types";
 import puppeteer from 'puppeteer-core/lib/esm/puppeteer/puppeteer-core-browser.js';
-import { generateText } from 'ai';
+import { generateText, tool } from 'ai';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { z } from 'zod';
 
@@ -117,41 +117,59 @@ export class BrowserAgent {
 
   private getBrowserTools() {
     return {
-      navigate: {
+      navigate: tool({
         description: 'Navigate to a specific URL in the browser',
         parameters: z.object({
           url: z.string().describe('The URL to navigate to')
-        })
-      },
-      click: {
+        }),
+        execute: async ({ url }) => {
+          return await this.executeAction({ type: 'navigate', url });
+        }
+      }),
+      click: tool({
         description: 'Click on an element using a CSS selector',
         parameters: z.object({
           selector: z.string().describe('CSS selector for the element to click')
-        })
-      },
-      type: {
+        }),
+        execute: async ({ selector }) => {
+          return await this.executeAction({ type: 'click', selector });
+        }
+      }),
+      type: tool({
         description: 'Type text into an input field using a CSS selector',
         parameters: z.object({
           selector: z.string().describe('CSS selector for the input field'),
           text: z.string().describe('Text to type into the field')
-        })
-      },
-      screenshot: {
+        }),
+        execute: async ({ selector, text }) => {
+          return await this.executeAction({ type: 'type', selector, text });
+        }
+      }),
+      screenshot: tool({
         description: 'Take a screenshot of the current browser page',
-        parameters: z.object({})
-      },
-      evaluate: {
+        parameters: z.object({}),
+        execute: async () => {
+          return await this.executeAction({ type: 'screenshot' });
+        }
+      }),
+      evaluate: tool({
         description: 'Execute JavaScript code in the browser context',
         parameters: z.object({
           script: z.string().describe('JavaScript code to execute')
-        })
-      },
-      wait: {
+        }),
+        execute: async ({ script }) => {
+          return await this.executeAction({ type: 'evaluate', script });
+        }
+      }),
+      wait: tool({
         description: 'Wait for a specified number of milliseconds',
         parameters: z.object({
           timeout: z.number().describe('Number of milliseconds to wait')
-        })
-      }
+        }),
+        execute: async ({ timeout }) => {
+          return await this.executeAction({ type: 'wait', timeout });
+        }
+      })
     };
   }
 
@@ -193,37 +211,7 @@ Always take a screenshot first to see what's on the page, then proceed with the 
         ],
         tools,
         maxToolRoundtrips: 10,
-        toolChoice: 'auto',
-        onStepFinish: async (step) => {
-          if (step.toolCalls) {
-            for (const toolCall of step.toolCalls) {
-              let result;
-              switch (toolCall.toolName) {
-                case 'navigate':
-                  result = await this.executeAction({ type: 'navigate', url: toolCall.args.url });
-                  break;
-                case 'click':
-                  result = await this.executeAction({ type: 'click', selector: toolCall.args.selector });
-                  break;
-                case 'type':
-                  result = await this.executeAction({ type: 'type', selector: toolCall.args.selector, text: toolCall.args.text });
-                  break;
-                case 'screenshot':
-                  result = await this.executeAction({ type: 'screenshot' });
-                  break;
-                case 'evaluate':
-                  result = await this.executeAction({ type: 'evaluate', script: toolCall.args.script });
-                  break;
-                case 'wait':
-                  result = await this.executeAction({ type: 'wait', timeout: toolCall.args.timeout });
-                  break;
-                default:
-                  result = { success: false, error: 'Unknown tool' };
-              }
-              toolCall.result = result;
-            }
-          }
-        }
+        toolChoice: 'auto'
       });
 
       return {
