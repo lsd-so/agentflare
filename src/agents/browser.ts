@@ -36,7 +36,7 @@ export class BrowserAgent {
 
   async connect(): Promise<void> {
     const container = getContainer(this.env.BROWSER_CONTAINER);
-    const versionRequest = new Request(`${this.baseUrl}/json/version`);
+    const versionRequest = new Request(`/json/version`);
     const response = await container.fetch(versionRequest);
     const result = await response.json() as { webSocketDebuggerUrl: string };
 
@@ -186,7 +186,7 @@ export class BrowserAgent {
       const anthropic = createAnthropic({
         apiKey: this.apiKey
       });
-      
+
       const result = await generateText({
         model: anthropic('claude-3-5-sonnet-20241022'),
         messages: [
