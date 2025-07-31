@@ -4,17 +4,6 @@ import { AppBindings } from "../types";
 
 const computerRoutes = new Hono<{ Bindings: AppBindings }>();
 
-// Main computer control endpoint
-computerRoutes.get("/computer", async (c) => {
-  const container = getContainer(c.env.COMPUTER_CONTAINER);
-
-  const url = new URL(c.req.url);
-  url.pathname = url.pathname.replace(/^\/computer/, "") || "/";
-  const modifiedRequest = new Request(url, c.req.raw);
-
-  return await container.fetch(modifiedRequest);
-});
-
 // VNC web interface endpoint
 computerRoutes.get("/vnc", async (c) => {
   const container = getContainer(c.env.COMPUTER_CONTAINER);
@@ -26,8 +15,30 @@ computerRoutes.get("/vnc", async (c) => {
   return await container.fetch(switchPort(modifiedRequest, 6080));
 });
 
+// Websockify endpoint
+computerRoutes.get("/websockify", async (c) => {
+  const container = getContainer(c.env.COMPUTER_CONTAINER);
+  return await container.fetch(switchPort(c.req.raw, 6080));
+});
+
 // VNC HTML page
 computerRoutes.get("vnc.html", async (c) => {
+  const container = getContainer(c.env.COMPUTER_CONTAINER);
+  return await container.fetch(switchPort(c.req.raw, 6080));
+});
+
+// JSON configuration files
+computerRoutes.get("/defaults.json", async (c) => {
+  const container = getContainer(c.env.COMPUTER_CONTAINER);
+  return await container.fetch(switchPort(c.req.raw, 6080));
+});
+
+computerRoutes.get("/mandatory.json", async (c) => {
+  const container = getContainer(c.env.COMPUTER_CONTAINER);
+  return await container.fetch(switchPort(c.req.raw, 6080));
+});
+
+computerRoutes.get("/package.json", async (c) => {
   const container = getContainer(c.env.COMPUTER_CONTAINER);
   return await container.fetch(switchPort(c.req.raw, 6080));
 });
@@ -44,8 +55,14 @@ computerRoutes.get("/app/*", async (c) => {
   return await container.fetch(switchPort(c.req.raw, 6080));
 });
 
-// noVNC core utilities
-computerRoutes.get("/core/util/*", async (c) => {
+// noVNC core resources
+computerRoutes.get("/core/*", async (c) => {
+  const container = getContainer(c.env.COMPUTER_CONTAINER);
+  return await container.fetch(switchPort(c.req.raw, 6080));
+});
+
+// Vendor pako resources
+computerRoutes.get("/vendor/pako/*", async (c) => {
   const container = getContainer(c.env.COMPUTER_CONTAINER);
   return await container.fetch(switchPort(c.req.raw, 6080));
 });
@@ -56,14 +73,8 @@ computerRoutes.get("/app/images/*", async (c) => {
   return await container.fetch(switchPort(c.req.raw, 6080));
 });
 
-// Audio file support (OGA format)
-computerRoutes.get("*oga", async (c) => {
-  const container = getContainer(c.env.COMPUTER_CONTAINER);
-  return await container.fetch(switchPort(c.req.raw, 6080));
-});
-
-// Audio file support (MP3 format)
-computerRoutes.get("*mp3", async (c) => {
+// Audio file support
+computerRoutes.get("/app/sounds/*", async (c) => {
   const container = getContainer(c.env.COMPUTER_CONTAINER);
   return await container.fetch(switchPort(c.req.raw, 6080));
 });

@@ -4,7 +4,7 @@ import { AppBindings } from "../types";
 
 const webRoutes = new Hono<{ Bindings: AppBindings }>();
 
-// Home route with available endpoints
+// Home route with available endpoints - commented out to allow computer root route
 webRoutes.get("/", (c) => {
   return c.text(
     "Available endpoints:\n" +

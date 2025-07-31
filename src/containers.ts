@@ -25,8 +25,8 @@ export class BrowserContainer extends Container {
 }
 
 export class ComputerContainer extends Container {
-  defaultPort = 5900;
-  requiredPorts = [5900, 6080]
+  defaultPort = 3000;
+  requiredPorts = [3000, 5900, 6080]
   sleepAfter = '2m';
 
   // Optional lifecycle hooks
