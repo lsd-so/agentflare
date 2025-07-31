@@ -1,6 +1,6 @@
 import * as cheerio from 'cheerio';
 import { generateText } from 'ai';
-import { anthropic } from '@ai-sdk/anthropic';
+import { createAnthropic } from '@ai-sdk/anthropic';
 import { z } from 'zod';
 
 export interface SearchResult {
@@ -108,10 +108,12 @@ export class SerpAgent {
     try {
       const tools = this.getSearchTools();
 
+      const anthropic = createAnthropic({
+        apiKey: this.apiKey
+      });
+      
       const result = await generateText({
-        model: anthropic('claude-3-5-sonnet-20241022', {
-          apiKey: this.apiKey
-        }),
+        model: anthropic('claude-3-5-sonnet-20241022'),
         messages: [
           {
             role: 'system',

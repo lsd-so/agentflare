@@ -1,7 +1,7 @@
 import { getContainer } from "@cloudflare/containers";
 import { AppBindings } from "../types";
 import { generateText } from 'ai';
-import { anthropic } from '@ai-sdk/anthropic';
+import { createAnthropic } from '@ai-sdk/anthropic';
 import { z } from 'zod';
 
 export interface ComputerAction {
@@ -157,10 +157,12 @@ export class ComputerAgent {
       const screenshot = await this.getScreenshot();
       const tools = this.getComputerTools();
 
+      const anthropic = createAnthropic({
+        apiKey: this.apiKey
+      });
+      
       const result = await generateText({
-        model: anthropic('claude-3-5-sonnet-20241022', {
-          apiKey: this.apiKey
-        }),
+        model: anthropic('claude-3-5-sonnet-20241022'),
         messages: [
           {
             role: 'system',
