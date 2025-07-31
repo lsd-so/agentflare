@@ -1,9 +1,5 @@
 import { getContainer } from "@cloudflare/containers";
 import { AppBindings } from "../types";
-import puppeteer from '@cloudflare/puppeteer';
-import { generateText, tool } from 'ai';
-import { createAnthropic } from '@ai-sdk/anthropic';
-import { z } from 'zod';
 
 export interface BrowserAction {
   type: 'navigate' | 'click' | 'type' | 'screenshot' | 'evaluate' | 'wait';
@@ -24,9 +20,8 @@ export interface BrowserResponse {
 export class BrowserAgent {
   private env: AppBindings;
   private baseUrl: string;
-  private browser: any | null = null;
-  private page: any | null = null;
   private apiKey: string;
+  private containerUrl?: string;
 
   constructor(env: AppBindings, baseUrl?: string, apiKey?: string) {
     this.env = env;
@@ -34,77 +29,58 @@ export class BrowserAgent {
     this.apiKey = apiKey || '';
   }
 
-  async connect(): Promise<void> {
-    const container = getContainer(this.env.BROWSER_CONTAINER);
-    const versionRequest = new Request(`${this.baseUrl}/json/version`);
-    const response = await container.fetch(versionRequest);
-    let result = undefined;
-
-    try {
-      result = await response.json() as { webSocketDebuggerUrl: string };
-    } catch (e) {
-      console.log("Caught an error getting JSON", e);
-      await new Promise(resolve => setTimeout(resolve, 2500));
-      return this.connect();
+  private async getContainerUrl(): Promise<string> {
+    if (!this.containerUrl) {
+      const container = await getContainer(this.env.BROWSER_CONTAINER, "browser");
+      this.containerUrl = await container.getURL();
     }
-
-    let wsEndpoint = result.webSocketDebuggerUrl;
-    if (this.baseUrl) {
-      wsEndpoint = wsEndpoint.replace('ws://localhost', `wss://${new URL(this.baseUrl).host}`);
-    }
-
-    try {
-      this.browser = await puppeteer.connect({
-        browserWSEndpoint: wsEndpoint
-      });
-    } catch (e) {
-      console.log("Caught an error connecting to browser", e);
-      await new Promise(resolve => setTimeout(resolve, 2500));
-      return this.connect();
-    }
-
-    this.page = await this.browser.newPage();
-    await this.page.setViewport({ width: 1080, height: 1024 });
-  }
-
-  async disconnect(): Promise<void> {
-    if (this.browser) {
-      await this.browser.close();
-      this.browser = null;
-      this.page = null;
-    }
+    return this.containerUrl;
   }
 
   async executeAction(action: BrowserAction): Promise<BrowserResponse> {
-    if (!this.page) {
-      await this.connect();
-    }
-
     try {
+      const containerUrl = await this.getContainerUrl();
+      
       switch (action.type) {
         case 'navigate':
-          await this.page!.goto(action.url!);
-          return { success: true, data: { url: action.url } };
+          const navResponse = await fetch(`${containerUrl}/navigate?url=${encodeURIComponent(action.url!)}`);
+          return await navResponse.json();
 
         case 'click':
-          await this.page!.click(action.selector!);
-          return { success: true, data: { clicked: action.selector } };
+          const clickResponse = await fetch(`${containerUrl}/click`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ selector: action.selector })
+          });
+          return await clickResponse.json();
 
         case 'type':
-          await this.page!.type(action.selector!, action.text!);
-          return { success: true, data: { typed: action.text, into: action.selector } };
+          const typeResponse = await fetch(`${containerUrl}/type`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ selector: action.selector, text: action.text })
+          });
+          return await typeResponse.json();
 
         case 'screenshot':
-          const screenshot = await this.page!.screenshot({ encoding: 'base64' });
-          return { success: true, screenshot: screenshot as string };
+          const screenshotResponse = await fetch(`${containerUrl}/screenshot`);
+          return await screenshotResponse.json();
 
         case 'evaluate':
-          const result = await this.page!.evaluate(action.script!);
-          return { success: true, data: result };
+          const evalResponse = await fetch(`${containerUrl}/evaluate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ script: action.script })
+          });
+          return await evalResponse.json();
 
         case 'wait':
-          await new Promise(resolve => setTimeout(resolve, action.timeout || 1000));
-          return { success: true };
+          const waitResponse = await fetch(`${containerUrl}/wait`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ timeout: action.timeout || 1000 })
+          });
+          return await waitResponse.json();
 
         default:
           return { success: false, error: 'Unknown action type' };
@@ -118,74 +94,16 @@ export class BrowserAgent {
   }
 
   async getScreenshot(): Promise<string | null> {
-    if (!this.page) {
-      await this.connect();
-    }
-
     try {
-      return await this.page!.screenshot({ encoding: 'base64' }) as string;
+      const containerUrl = await this.getContainerUrl();
+      const response = await fetch(`${containerUrl}/screenshot`);
+      const result = await response.json();
+      return result.success ? result.screenshot : null;
     } catch (error) {
       return null;
     }
   }
 
-  private getBrowserTools() {
-    return {
-      navigate: tool({
-        description: 'Navigate to a specific URL in the browser',
-        parameters: z.object({
-          url: z.string().describe('The URL to navigate to')
-        }),
-        execute: async ({ url }) => {
-          return await this.executeAction({ type: 'navigate', url });
-        }
-      }),
-      click: tool({
-        description: 'Click on an element using a CSS selector',
-        parameters: z.object({
-          selector: z.string().describe('CSS selector for the element to click')
-        }),
-        execute: async ({ selector }) => {
-          return await this.executeAction({ type: 'click', selector });
-        }
-      }),
-      type: tool({
-        description: 'Type text into an input field using a CSS selector',
-        parameters: z.object({
-          selector: z.string().describe('CSS selector for the input field'),
-          text: z.string().describe('Text to type into the field')
-        }),
-        execute: async ({ selector, text }) => {
-          return await this.executeAction({ type: 'type', selector, text });
-        }
-      }),
-      screenshot: tool({
-        description: 'Take a screenshot of the current browser page',
-        parameters: z.object({}),
-        execute: async () => {
-          return await this.executeAction({ type: 'screenshot' });
-        }
-      }),
-      evaluate: tool({
-        description: 'Execute JavaScript code in the browser context',
-        parameters: z.object({
-          script: z.string().describe('JavaScript code to execute')
-        }),
-        execute: async ({ script }) => {
-          return await this.executeAction({ type: 'evaluate', script });
-        }
-      }),
-      wait: tool({
-        description: 'Wait for a specified number of milliseconds',
-        parameters: z.object({
-          timeout: z.number().describe('Number of milliseconds to wait')
-        }),
-        execute: async ({ timeout }) => {
-          return await this.executeAction({ type: 'wait', timeout });
-        }
-      })
-    };
-  }
 
   async processWithLLM(prompt: string): Promise<{ success: boolean; message: string; error?: string }> {
     if (!this.apiKey) {
@@ -193,45 +111,30 @@ export class BrowserAgent {
     }
 
     try {
-      await this.connect();
-      const screenshot = await this.getScreenshot();
-      const tools = this.getBrowserTools();
-
-      const anthropic = createAnthropic({
-        apiKey: this.apiKey
+      const containerUrl = await this.getContainerUrl();
+      const response = await fetch(`${containerUrl}/agent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          prompt: prompt,
+          apiKey: this.apiKey 
+        })
       });
 
-      const result = await generateText({
-        model: anthropic('claude-3-5-sonnet-20241022'),
-        messages: [
-          {
-            role: 'system',
-            content: `You are a browser automation agent. You can navigate websites, interact with elements, take screenshots, and execute JavaScript. 
-
-Available tools:
-- navigate: Go to URLs
-- click: Click elements by CSS selector
-- type: Type text into input fields
-- screenshot: Take screenshots to see current page
-- evaluate: Execute JavaScript code
-- wait: Wait for specified time
-
-Always take a screenshot first to see what's on the page, then proceed with the requested actions. Be precise with CSS selectors and explain what you're doing.`
-          },
-          {
-            role: 'user',
-            content: `${prompt}${screenshot ? '\n\nCurrent page screenshot is attached.' : ''}`
-          }
-        ],
-        tools,
-        maxToolRoundtrips: 10,
-        toolChoice: 'auto'
-      });
-
-      return {
-        success: true,
-        message: result.text
-      };
+      const result = await response.json();
+      
+      if (result.success) {
+        return {
+          success: true,
+          message: result.message
+        };
+      } else {
+        return {
+          success: false,
+          message: 'Failed to process browser task',
+          error: result.error
+        };
+      }
     } catch (error) {
       return {
         success: false,
@@ -247,8 +150,7 @@ export async function callBrowserAgent(
   prompt: string,
   baseUrl?: string,
   apiKey?: string
-): Promise<BrowserAgent> {
+): Promise<{ success: boolean; message: string; error?: string }> {
   const agent = new BrowserAgent(env, baseUrl, apiKey);
-  await agent.connect();
-  return agent;
+  return await agent.processWithLLM(prompt);
 }

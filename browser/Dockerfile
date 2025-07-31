@@ -1,12 +1,13 @@
-FROM alpine:3.19
+FROM oven/bun:alpine
 
-# Installs latest Chromium package.
+# Install system dependencies
 RUN apk upgrade --no-cache --available \
     && apk add --no-cache \
       nginx \
       chromium-swiftshader \
       ttf-freefont \
       font-noto-emoji \
+      supervisor \
     && apk add --no-cache \
       --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community \
       font-wqy-zenhei
@@ -27,11 +28,23 @@ RUN chown -R chrome:chrome /var/log/nginx
 RUN chown -R chrome:chrome /var/lib/nginx
 RUN chown -R chrome:chrome /var/lib/nginx/logs/
 
+# Install Node.js dependencies
+RUN bun add express puppeteer-core ai @ai-sdk/anthropic zod
+
+# Copy application files
+COPY app.ts /usr/src/app/app.ts
+COPY supervisord.conf /etc/supervisord.conf
+
+RUN chown -R chrome:chrome /usr/src/app
+
 # Run Chrome as non-privileged
 USER chrome
 WORKDIR /usr/src/app
 
 ENV CHROME_BIN=/usr/bin/chromium-browser \
-    CHROME_PATH=/usr/lib/chromium/
+    CHROME_PATH=/usr/lib/chromium/ \
+    EXPRESS_PORT=3000
 
-CMD nginx && chromium-browser --headless --disable-software-rasterizer --disable-dev-shm-usage --no-sandbox --remote-debugging-address=0.0.0.0 --remote-debugging-port=9222 --user=root --proxy-bypass-list='<-loopback>'
+EXPOSE 9222 3000 80
+
+CMD ["sudo", "/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
