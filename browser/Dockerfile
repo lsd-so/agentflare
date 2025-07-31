@@ -18,6 +18,7 @@ COPY local.conf /etc/fonts/local.conf
 # Add Chrome as a user
 RUN mkdir -p /usr/src/app \
     && adduser -D chrome \
+    && echo "chrome ALL=NOPASSWD: ALL" >> /etc/sudoers \
     && chown -R chrome:chrome /usr/src/app
 
 COPY nginx.conf /etc/nginx/nginx.conf
@@ -48,4 +49,4 @@ ENV CHROME_BIN=/usr/bin/chromium-browser \
 
 EXPOSE 9222 3000 80
 
-CMD ["sudo", "/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+CMD nginx && sudo /usr/bin/supervisord -c /etc/supervisord.conf
