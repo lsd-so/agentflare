@@ -43,7 +43,7 @@ export class BrowserAgent {
     try {
       result = await response.json() as { webSocketDebuggerUrl: string };
     } catch (e) {
-      console.log("Caught an error", e);
+      console.log("Caught an error getting JSON", e);
       await new Promise(resolve => setTimeout(resolve, 2500));
       return this.connect();
     }
@@ -53,9 +53,15 @@ export class BrowserAgent {
       wsEndpoint = wsEndpoint.replace('ws://localhost', `wss://${new URL(this.baseUrl).host}`);
     }
 
-    this.browser = await puppeteer.connect({
-      browserWSEndpoint: wsEndpoint
-    });
+    try {
+      this.browser = await puppeteer.connect({
+        browserWSEndpoint: wsEndpoint
+      });
+    } catch (e) {
+      console.log("Caught an error connecting to browser", e);
+      await new Promise(resolve => setTimeout(resolve, 2500));
+      return this.connect();
+    }
 
     this.page = await this.browser.newPage();
     await this.page.setViewport({ width: 1080, height: 1024 });
