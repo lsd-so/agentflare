@@ -42,6 +42,7 @@ export class MainAgent {
         execute: async ({ prompt }) => {
           console.log("Going to call browser agent");
           const result = await callBrowserAgent(this.env, prompt, this.baseUrl, this.apiKey);
+          console.log("Got back results from browser");
           return { message: result.message, success: result.success, error: result.error };
         }
       }),
@@ -54,6 +55,7 @@ export class MainAgent {
           console.log("Going to call computer agent");
           const agent = await callComputerAgent(this.env, prompt, this.baseUrl, this.apiKey);
           const result = await agent.processWithLLM(prompt);
+          console.log("Got back results from computer");
           return { message: result.message, success: result.success, error: result.error };
         }
       }),
@@ -65,6 +67,7 @@ export class MainAgent {
         execute: async ({ query }) => {
           console.log("Going to call serp agent");
           const results = await callSerpAgent(query, 10, this.apiKey);
+          console.log("Got back results from serp");
           return {
             message: `Found ${results.results.length} search results for "${query}"`,
             success: results.success,
