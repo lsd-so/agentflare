@@ -41,8 +41,7 @@ export class MainAgent {
         }),
         execute: async ({ prompt }) => {
           console.log("Going to call browser agent");
-          const agent = await callBrowserAgent(this.env, prompt, this.baseUrl, this.apiKey);
-          const result = await agent.processWithLLM(prompt);
+          const result = await callBrowserAgent(this.env, prompt, this.baseUrl, this.apiKey);
           return { message: result.message, success: result.success, error: result.error };
         }
       }),
@@ -111,13 +110,13 @@ export class MainAgent {
   }
 
   private async delegateToBrowser(task: AgentTask, startTime: number): Promise<AgentResponse> {
-    const browserAgent = await callBrowserAgent(this.env, task.prompt, this.baseUrl);
+    const result = await callBrowserAgent(this.env, task.prompt, this.baseUrl, this.apiKey);
 
     return {
-      success: true,
-      message: `Browser agent has been initialized and is ready to execute: "${task.prompt}"`,
+      success: result.success,
+      message: result.message,
       taskType: 'browser',
-      data: { agent: browserAgent },
+      error: result.error,
       executionTime: Date.now() - startTime
     };
   }

@@ -154,3 +154,11 @@ export async function callBrowserAgent(
   const agent = new BrowserAgent(env, baseUrl, apiKey);
   return await agent.processWithLLM(prompt);
 }
+
+export async function createBrowserAgent(
+  env: AppBindings,
+  baseUrl?: string,
+  apiKey?: string
+): Promise<BrowserAgent> {
+  return new BrowserAgent(env, baseUrl, apiKey);
+}
