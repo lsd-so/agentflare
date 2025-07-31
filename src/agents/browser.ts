@@ -36,9 +36,17 @@ export class BrowserAgent {
 
   async connect(): Promise<void> {
     const container = getContainer(this.env.BROWSER_CONTAINER);
-    const versionRequest = new Request(`/json/version`);
+    const versionRequest = new Request(`${this.baseUrl}/json/version`);
     const response = await container.fetch(versionRequest);
-    const result = await response.json() as { webSocketDebuggerUrl: string };
+    let result = undefined;
+
+    try {
+      result = await response.json() as { webSocketDebuggerUrl: string };
+    } catch (e) {
+      console.log("Caught an error", e);
+      await new Promise(resolve => setTimeout(resolve, 2500));
+      return this.connect();
+    }
 
     let wsEndpoint = result.webSocketDebuggerUrl;
     if (this.baseUrl) {
