@@ -3,6 +3,7 @@ FROM oven/bun:alpine
 # Install system dependencies
 RUN apk upgrade --no-cache --available \
     && apk add --no-cache \
+      sudo \
       nginx \
       chromium-swiftshader \
       ttf-freefont \

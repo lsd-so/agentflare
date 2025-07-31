@@ -391,20 +391,6 @@ webRoutes.post("/chat", async (c) => {
   }
 });
 
-// Route requests to a specific container using the container ID
-webRoutes.get("/container/:id", async (c) => {
-  const id = c.req.param("id");
-  const containerId = c.env.BROWSER_CONTAINER.idFromName(`/container/${id}`);
-  const container = c.env.BROWSER_CONTAINER.get(containerId);
-  return await container.fetch(c.req.raw);
-});
-
-// Load balance requests across multiple containers
-webRoutes.get("/lb", async (c) => {
-  const container = await loadBalance(c.env.BROWSER_CONTAINER, 3);
-  return await container.fetch(c.req.raw);
-});
-
 // Get a single container instance (singleton pattern)
 webRoutes.get("/singleton", async (c) => {
   const container = getContainer(c.env.BROWSER_CONTAINER);
