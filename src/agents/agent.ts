@@ -25,7 +25,7 @@ export class MainAgent {
 
   constructor(env: AppBindings, baseUrl?: string, serpApiKey?: string) {
     this.env = env;
-    this.baseUrl = baseUrl || '';
+    this.baseUrl = baseUrl || 'https://agentflare.yev-81d.workers.dev';
     this.serpApiKey = serpApiKey;
   }
 

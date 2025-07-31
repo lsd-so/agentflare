@@ -24,7 +24,7 @@ export class ComputerAgent {
 
   constructor(env: AppBindings, baseUrl?: string) {
     this.env = env;
-    this.baseUrl = baseUrl || '';
+    this.baseUrl = baseUrl || 'https://agentflare.yev-81d.workers.dev';
   }
 
   async executeAction(action: ComputerAction): Promise<ComputerResponse> {

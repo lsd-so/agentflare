@@ -315,7 +315,7 @@ webRoutes.post("/chat", async (c) => {
       return c.json({ success: false, error: 'Message is required' });
     }
     
-    const agent = await createMainAgent(c.env);
+    const agent = await createMainAgent(c.env, 'https://agentflare.yev-81d.workers.dev');
     const response = await agent.processNaturalLanguageRequest(message);
     
     return c.json({
