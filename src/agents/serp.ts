@@ -130,7 +130,7 @@ When users ask questions or request information, use the search tool to find rel
           }
         ],
         tools,
-        maxToolRoundtrips: 3,
+        maxSteps: 3,
         toolChoice: 'auto'
       });
 

@@ -183,7 +183,7 @@ Always take a screenshot first to see the current desktop state, then proceed wi
           }
         ],
         tools,
-        maxToolRoundtrips: 10,
+        maxSteps: 10,
         toolChoice: 'auto'
       });
 

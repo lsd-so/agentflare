@@ -1,5 +1,8 @@
 const express = require('express');
 const puppeteer = require('puppeteer-core');
+const { generateText, tool } = require('ai');
+const { createAnthropic } = require('@ai-sdk/anthropic');
+const { z } = require('zod');
 
 const app = express();
 const port = 3000;
@@ -17,10 +20,10 @@ const initializeBrowser = async () => {
       browser = await puppeteer.connect({
         browserWSEndpoint: 'ws://localhost:9222'
       });
-      
+
       page = await browser.newPage();
       await page.setViewport({ width: 1080, height: 1024 });
-      
+
       console.log('Browser initialized successfully');
     } catch (error) {
       console.error('Failed to initialize browser:', error);
@@ -48,7 +51,7 @@ app.get('/navigate', async (req, res) => {
 
     const page = await ensureBrowser();
     await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
-    
+
     res.json({ success: true, message: `Navigated to ${url}` });
   } catch (error) {
     console.error('Navigation error:', error);
@@ -67,7 +70,7 @@ app.post('/click', async (req, res) => {
     const page = await ensureBrowser();
     await page.waitForSelector(selector, { timeout: 10000 });
     await page.click(selector);
-    
+
     res.json({ success: true, message: `Clicked on ${selector}` });
   } catch (error) {
     console.error('Click error:', error);
@@ -86,7 +89,7 @@ app.post('/type', async (req, res) => {
     const page = await ensureBrowser();
     await page.waitForSelector(selector, { timeout: 10000 });
     await page.type(selector, text);
-    
+
     res.json({ success: true, message: `Typed "${text}" into ${selector}` });
   } catch (error) {
     console.error('Type error:', error);
@@ -98,11 +101,11 @@ app.post('/type', async (req, res) => {
 app.get('/screenshot', async (req, res) => {
   try {
     const page = await ensureBrowser();
-    const screenshot = await page.screenshot({ 
+    const screenshot = await page.screenshot({
       encoding: 'base64',
       fullPage: false
     });
-    
+
     res.json({ success: true, screenshot });
   } catch (error) {
     console.error('Screenshot error:', error);
@@ -120,7 +123,7 @@ app.post('/evaluate', async (req, res) => {
 
     const page = await ensureBrowser();
     const result = await page.evaluate(script);
-    
+
     res.json({ success: true, result });
   } catch (error) {
     console.error('Evaluate error:', error);
@@ -132,9 +135,9 @@ app.post('/evaluate', async (req, res) => {
 app.post('/wait', async (req, res) => {
   try {
     const { timeout = 1000 } = req.body;
-    
+
     await new Promise(resolve => setTimeout(resolve, timeout));
-    
+
     res.json({ success: true, message: `Waited ${timeout}ms` });
   } catch (error) {
     console.error('Wait error:', error);
@@ -153,17 +156,12 @@ app.post('/agent', async (req, res) => {
       return res.status(400).json({ success: false, error: 'API key required' });
     }
 
-    // Import AI SDK
-    const { generateText, tool } = require('ai');
-    const { createAnthropic } = require('@ai-sdk/anthropic');
-    const { z } = require('zod');
-
     // Ensure browser is ready
     const currentPage = await ensureBrowser();
-    
+
     // Take initial screenshot
     const screenshot = await currentPage.screenshot({ encoding: 'base64' });
-    
+
     // Define browser tools
     const tools = {
       navigate: tool({
@@ -258,17 +256,17 @@ Always take a screenshot first to see what's on the page, then proceed with the 
         }
       ],
       tools,
-      maxToolRoundtrips: 10,
+      maxSteps: 10,
       toolChoice: 'auto'
     });
 
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: result.text,
       toolCalls: result.toolCalls,
       toolResults: result.toolResults
     });
-    
+
   } catch (error) {
     console.error('Agent error:', error);
     res.status(500).json({ success: false, error: error.message });
@@ -277,8 +275,8 @@ Always take a screenshot first to see what's on the page, then proceed with the 
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ 
-    success: true, 
+  res.json({
+    success: true,
     message: 'Browser container is healthy',
     browserConnected: !!browser,
     pageReady: !!page
@@ -296,7 +294,7 @@ process.on('SIGTERM', async () => {
 
 app.listen(port, '0.0.0.0', async () => {
   console.log(`Browser container app listening on port ${port}`);
-  
+
   // Initialize browser on startup
   try {
     await initializeBrowser();
