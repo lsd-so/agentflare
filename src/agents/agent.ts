@@ -208,13 +208,9 @@ export class MainAgent {
     try {
       const tools = this.getTools();
 
-      console.log('Tools structure:', JSON.stringify(tools, null, 2));
-
       const anthropic = createAnthropic({
         apiKey: this.apiKey
       });
-
-      console.log("Going to generate text");
 
       const result = await generateText({
         model: anthropic('claude-3-5-sonnet-20241022'),
@@ -235,7 +231,7 @@ Use these tools when the user's request requires their capabilities. You can use
           }
         ],
         tools,
-        maxToolRoundtrips: 5,
+        maxSteps: 10,
         toolChoice: 'auto'
       });
 
