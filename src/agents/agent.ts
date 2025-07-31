@@ -40,6 +40,7 @@ export class MainAgent {
           prompt: z.string().describe('Natural language description of what you want to do in the browser')
         }),
         execute: async ({ prompt }) => {
+          console.log("Going to call browser agent");
           const agent = await callBrowserAgent(this.env, prompt, this.baseUrl, this.apiKey);
           const result = await agent.processWithLLM(prompt);
           return { message: result.message, success: result.success, error: result.error };
@@ -51,6 +52,7 @@ export class MainAgent {
           prompt: z.string().describe('Natural language description of what you want to do on the desktop')
         }),
         execute: async ({ prompt }) => {
+          console.log("Going to call computer agent");
           const agent = await callComputerAgent(this.env, prompt, this.baseUrl, this.apiKey);
           const result = await agent.processWithLLM(prompt);
           return { message: result.message, success: result.success, error: result.error };
@@ -62,6 +64,7 @@ export class MainAgent {
           query: z.string().describe('The search query to execute')
         }),
         execute: async ({ query }) => {
+          console.log("Going to call serp agent");
           const results = await callSerpAgent(query, 10, this.apiKey);
           return {
             message: `Found ${results.results.length} search results for "${query}"`,
@@ -205,13 +208,15 @@ export class MainAgent {
 
     try {
       const tools = this.getTools();
-      
+
       console.log('Tools structure:', JSON.stringify(tools, null, 2));
 
       const anthropic = createAnthropic({
         apiKey: this.apiKey
       });
-      
+
+      console.log("Going to generate text");
+
       const result = await generateText({
         model: anthropic('claude-3-5-sonnet-20241022'),
         messages: [
