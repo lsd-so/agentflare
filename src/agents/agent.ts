@@ -62,13 +62,12 @@ export class MainAgent {
           query: z.string().describe('The search query to execute')
         }),
         execute: async ({ query }) => {
-          const agent = new (await import('./serp')).SerpAgent(this.apiKey);
-          const result = await agent.processWithLLM(query);
+          const results = await callSerpAgent(query, 10, this.apiKey);
           return {
-            message: result.message,
-            success: result.success,
-            results: result.results,
-            error: result.error
+            message: `Found ${results.results.length} search results for "${query}"`,
+            success: results.success,
+            results: results.results,
+            error: results.error
           };
         }
       })
