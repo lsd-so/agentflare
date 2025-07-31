@@ -1,4 +1,4 @@
-import { getContainer } from "@cloudflare/containers";
+import { getContainer, switchPort } from "@cloudflare/containers";
 import { AppBindings } from "../types";
 
 export interface BrowserAction {
@@ -21,65 +21,61 @@ export class BrowserAgent {
   private env: AppBindings;
   private baseUrl: string;
   private apiKey: string;
-  private containerUrl?: string;
-
   constructor(env: AppBindings, baseUrl?: string, apiKey?: string) {
     this.env = env;
     this.baseUrl = baseUrl || 'https://agentflare.yev-81d.workers.dev';
     this.apiKey = apiKey || '';
   }
 
-  private async getContainerUrl(): Promise<string> {
-    if (!this.containerUrl) {
-      const container = await getContainer(this.env.BROWSER_CONTAINER, "browser");
-      this.containerUrl = await container.getURL();
-    }
-    return this.containerUrl;
-  }
-
   async executeAction(action: BrowserAction): Promise<BrowserResponse> {
     try {
-      const containerUrl = await this.getContainerUrl();
-      
+      const container = getContainer(this.env.BROWSER_CONTAINER, "browser");
+
       switch (action.type) {
         case 'navigate':
-          const navResponse = await fetch(`${containerUrl}/navigate?url=${encodeURIComponent(action.url!)}`);
+          const navRequest = new Request(`${this.baseUrl}/navigate?url=${encodeURIComponent(action.url!)}`);
+          const navResponse = await container.fetch(switchPort(navRequest, 3000));
           return await navResponse.json();
 
         case 'click':
-          const clickResponse = await fetch(`${containerUrl}/click`, {
+          const clickRequest = new Request(`${this.baseUrl}/click`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ selector: action.selector })
           });
+          const clickResponse = await container.fetch(switchPort(clickRequest, 3000));
           return await clickResponse.json();
 
         case 'type':
-          const typeResponse = await fetch(`${containerUrl}/type`, {
+          const typeRequest = new Request(`${this.baseUrl}/type`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ selector: action.selector, text: action.text })
           });
+          const typeResponse = await container.fetch(switchPort(typeRequest, 3000));
           return await typeResponse.json();
 
         case 'screenshot':
-          const screenshotResponse = await fetch(`${containerUrl}/screenshot`);
+          const screenshotRequest = new Request(`${this.baseUrl}/screenshot`);
+          const screenshotResponse = await container.fetch(switchPort(screenshotRequest, 3000));
           return await screenshotResponse.json();
 
         case 'evaluate':
-          const evalResponse = await fetch(`${containerUrl}/evaluate`, {
+          const evalRequest = new Request(`${this.baseUrl}/evaluate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ script: action.script })
           });
+          const evalResponse = await container.fetch(switchPort(evalRequest, 3000));
           return await evalResponse.json();
 
         case 'wait':
-          const waitResponse = await fetch(`${containerUrl}/wait`, {
+          const waitRequest = new Request(`${this.baseUrl}/wait`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ timeout: action.timeout || 1000 })
           });
+          const waitResponse = await container.fetch(switchPort(waitRequest, 3000));
           return await waitResponse.json();
 
         default:
@@ -95,8 +91,9 @@ export class BrowserAgent {
 
   async getScreenshot(): Promise<string | null> {
     try {
-      const containerUrl = await this.getContainerUrl();
-      const response = await fetch(`${containerUrl}/screenshot`);
+      const container = getContainer(this.env.BROWSER_CONTAINER, "browser");
+      const request = new Request(`${this.baseUrl}/screenshot`);
+      const response = await container.fetch(switchPort(request, 3000));
       const result = await response.json();
       return result.success ? result.screenshot : null;
     } catch (error) {
@@ -111,18 +108,19 @@ export class BrowserAgent {
     }
 
     try {
-      const containerUrl = await this.getContainerUrl();
-      const response = await fetch(`${containerUrl}/agent`, {
+      const container = getContainer(this.env.BROWSER_CONTAINER, "browser");
+      const request = new Request(`${this.baseUrl}/agent`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           prompt: prompt,
-          apiKey: this.apiKey 
+          apiKey: this.apiKey
         })
       });
+      const response = await container.fetch(switchPort(request, 3000));
 
       const result = await response.json();
-      
+
       if (result.success) {
         return {
           success: true,
