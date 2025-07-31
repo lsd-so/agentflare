@@ -29,7 +29,7 @@ export class BrowserAgent {
 
   async executeAction(action: BrowserAction): Promise<BrowserResponse> {
     try {
-      const container = getContainer(this.env.BROWSER_CONTAINER, "browser");
+      const container = getContainer(this.env.BROWSER_CONTAINER);
 
       switch (action.type) {
         case 'navigate':
@@ -91,7 +91,7 @@ export class BrowserAgent {
 
   async getScreenshot(): Promise<string | null> {
     try {
-      const container = getContainer(this.env.BROWSER_CONTAINER, "browser");
+      const container = getContainer(this.env.BROWSER_CONTAINER);
       const request = new Request(`${this.baseUrl}/screenshot`);
       const response = await container.fetch(switchPort(request, 3000));
       const result = await response.json();
@@ -108,7 +108,7 @@ export class BrowserAgent {
     }
 
     try {
-      const container = getContainer(this.env.BROWSER_CONTAINER, "browser");
+      const container = getContainer(this.env.BROWSER_CONTAINER);
       const request = new Request(`${this.baseUrl}/agent`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

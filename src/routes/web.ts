@@ -355,7 +355,7 @@ webRoutes.get("/", (c) => {
     </script>
 </body>
 </html>`;
-  
+
   return c.html(html);
 });
 
@@ -363,18 +363,18 @@ webRoutes.get("/", (c) => {
 webRoutes.post("/chat", async (c) => {
   try {
     const { message, apiKey } = await c.req.json();
-    
+
     if (!message || typeof message !== 'string') {
       return c.json({ success: false, error: 'Message is required' });
     }
-    
+
     if (!apiKey || typeof apiKey !== 'string') {
       return c.json({ success: false, error: 'API key is required' });
     }
-    
+
     const agent = await createMainAgent(c.env, 'https://agentflare.yev-81d.workers.dev', apiKey);
     const response = await agent.processNaturalLanguageRequest(message);
-    
+
     return c.json({
       success: response.success,
       message: response.message,
@@ -396,12 +396,6 @@ webRoutes.get("/container/:id", async (c) => {
   const id = c.req.param("id");
   const containerId = c.env.BROWSER_CONTAINER.idFromName(`/container/${id}`);
   const container = c.env.BROWSER_CONTAINER.get(containerId);
-  return await container.fetch(c.req.raw);
-});
-
-// Demonstrate error handling - this route forces a panic in the container
-webRoutes.get("/error", async (c) => {
-  const container = getContainer(c.env.BROWSER_CONTAINER, "error-test");
   return await container.fetch(c.req.raw);
 });
 
