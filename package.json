@@ -24,7 +24,7 @@
     "puppeteer-core": "^24.15.0",
     "rfb2": "^0.2.2",
     "vnc-rfb-client": "^0.2.0",
-    "zod": "^4.0.14"
+    "zod": "3.25.76"
   },
   "cloudflare": {
     "label": "Containers Starter",
