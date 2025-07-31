@@ -41,6 +41,75 @@ const ensureBrowser = async () => {
   return page;
 };
 
+// Get browser automation tools for LLM
+const getBrowserTools = async () => {
+  const currentPage = await ensureBrowser();
+  
+  return {
+    navigate: tool({
+      description: 'Navigate to a specific URL in the browser',
+      parameters: z.object({
+        url: z.string().describe('The URL to navigate to')
+      }),
+      execute: async ({ url }) => {
+        await currentPage.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
+        return { success: true, message: `Navigated to ${url}` };
+      }
+    }),
+    click: tool({
+      description: 'Click on an element using a CSS selector',
+      parameters: z.object({
+        selector: z.string().describe('CSS selector for the element to click')
+      }),
+      execute: async ({ selector }) => {
+        await currentPage.waitForSelector(selector, { timeout: 10000 });
+        await currentPage.click(selector);
+        return { success: true, message: `Clicked on ${selector}` };
+      }
+    }),
+    type: tool({
+      description: 'Type text into an input field using a CSS selector',
+      parameters: z.object({
+        selector: z.string().describe('CSS selector for the input field'),
+        text: z.string().describe('Text to type into the field')
+      }),
+      execute: async ({ selector, text }) => {
+        await currentPage.waitForSelector(selector, { timeout: 10000 });
+        await currentPage.type(selector, text);
+        return { success: true, message: `Typed "${text}" into ${selector}` };
+      }
+    }),
+    screenshot: tool({
+      description: 'Take a screenshot of the current browser page',
+      parameters: z.object({}),
+      execute: async () => {
+        const screenshot = await currentPage.screenshot({ encoding: 'base64' });
+        return { success: true, screenshot };
+      }
+    }),
+    evaluate: tool({
+      description: 'Execute JavaScript code in the browser context',
+      parameters: z.object({
+        script: z.string().describe('JavaScript code to execute')
+      }),
+      execute: async ({ script }) => {
+        const result = await currentPage.evaluate(script);
+        return { success: true, result };
+      }
+    }),
+    wait: tool({
+      description: 'Wait for a specified number of milliseconds',
+      parameters: z.object({
+        timeout: z.number().describe('Number of milliseconds to wait')
+      }),
+      execute: async ({ timeout }) => {
+        await new Promise(resolve => setTimeout(resolve, timeout));
+        return { success: true, message: `Waited ${timeout}ms` };
+      }
+    })
+  };
+};
+
 // Navigation endpoint
 app.get('/navigate', async (req, res) => {
   try {
@@ -145,6 +214,30 @@ app.post('/wait', async (req, res) => {
   }
 });
 
+// Title endpoint for debugging
+app.get('/title', async (req, res) => {
+  try {
+    const { url } = req.query;
+    if (!url) {
+      return res.status(400).json({ success: false, error: 'URL parameter required' });
+    }
+
+    const page = await ensureBrowser();
+    await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
+    const title = await page.title();
+    
+    res.json({ 
+      success: true, 
+      title: title,
+      url: url,
+      message: `Page title: "${title}"` 
+    });
+  } catch (error) {
+    console.error('Title error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Agent endpoint for LLM-powered interactions
 app.post('/agent', async (req, res) => {
   try {
@@ -162,70 +255,8 @@ app.post('/agent', async (req, res) => {
     // Take initial screenshot
     const screenshot = await currentPage.screenshot({ encoding: 'base64' });
 
-    // Define browser tools
-    const tools = {
-      navigate: tool({
-        description: 'Navigate to a specific URL in the browser',
-        parameters: z.object({
-          url: z.string().describe('The URL to navigate to')
-        }),
-        execute: async ({ url }) => {
-          await currentPage.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
-          return { success: true, message: `Navigated to ${url}` };
-        }
-      }),
-      click: tool({
-        description: 'Click on an element using a CSS selector',
-        parameters: z.object({
-          selector: z.string().describe('CSS selector for the element to click')
-        }),
-        execute: async ({ selector }) => {
-          await currentPage.waitForSelector(selector, { timeout: 10000 });
-          await currentPage.click(selector);
-          return { success: true, message: `Clicked on ${selector}` };
-        }
-      }),
-      type: tool({
-        description: 'Type text into an input field using a CSS selector',
-        parameters: z.object({
-          selector: z.string().describe('CSS selector for the input field'),
-          text: z.string().describe('Text to type into the field')
-        }),
-        execute: async ({ selector, text }) => {
-          await currentPage.waitForSelector(selector, { timeout: 10000 });
-          await currentPage.type(selector, text);
-          return { success: true, message: `Typed "${text}" into ${selector}` };
-        }
-      }),
-      screenshot: tool({
-        description: 'Take a screenshot of the current browser page',
-        parameters: z.object({}),
-        execute: async () => {
-          const screenshot = await currentPage.screenshot({ encoding: 'base64' });
-          return { success: true, screenshot };
-        }
-      }),
-      evaluate: tool({
-        description: 'Execute JavaScript code in the browser context',
-        parameters: z.object({
-          script: z.string().describe('JavaScript code to execute')
-        }),
-        execute: async ({ script }) => {
-          const result = await currentPage.evaluate(script);
-          return { success: true, result };
-        }
-      }),
-      wait: tool({
-        description: 'Wait for a specified number of milliseconds',
-        parameters: z.object({
-          timeout: z.number().describe('Number of milliseconds to wait')
-        }),
-        execute: async ({ timeout }) => {
-          await new Promise(resolve => setTimeout(resolve, timeout));
-          return { success: true, message: `Waited ${timeout}ms` };
-        }
-      })
-    };
+    // Get browser tools
+    const tools = await getBrowserTools();
 
     // Create Anthropic client
     const anthropic = createAnthropic({
