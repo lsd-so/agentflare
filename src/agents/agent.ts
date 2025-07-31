@@ -21,12 +21,10 @@ export interface AgentResponse {
 export class MainAgent {
   private env: AppBindings;
   private baseUrl: string;
-  private serpApiKey?: string;
 
-  constructor(env: AppBindings, baseUrl?: string, serpApiKey?: string) {
+  constructor(env: AppBindings, baseUrl?: string) {
     this.env = env;
     this.baseUrl = baseUrl || 'https://agentflare.yev-81d.workers.dev';
-    this.serpApiKey = serpApiKey;
   }
 
   async executeTask(task: AgentTask): Promise<AgentResponse> {
@@ -87,11 +85,7 @@ export class MainAgent {
   }
 
   private async delegateToSearch(task: AgentTask, startTime: number): Promise<AgentResponse> {
-    const searchResults = await callSerpAgent(
-      task.prompt, 
-      'duckduckgo', 
-      this.serpApiKey
-    );
+    const searchResults = await callSerpAgent(task.prompt);
     
     if (searchResults.success) {
       const resultsText = searchResults.results
@@ -159,8 +153,7 @@ export class MainAgent {
 
 export async function createMainAgent(
   env: AppBindings, 
-  baseUrl?: string,
-  serpApiKey?: string
+  baseUrl?: string
 ): Promise<MainAgent> {
-  return new MainAgent(env, baseUrl, serpApiKey);
+  return new MainAgent(env, baseUrl);
 }

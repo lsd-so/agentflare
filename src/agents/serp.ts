@@ -1,3 +1,5 @@
+import * as cheerio from 'cheerio';
+
 export interface SearchResult {
   title: string;
   url: string;
@@ -14,21 +16,13 @@ export interface SerpResponse {
 }
 
 export class SerpAgent {
-  private apiKey?: string;
-  private searchEngine: 'brave' | 'duckduckgo';
-
-  constructor(searchEngine: 'brave' | 'duckduckgo' = 'duckduckgo', apiKey?: string) {
-    this.searchEngine = searchEngine;
-    this.apiKey = apiKey;
+  constructor() {
+    // No parameters needed for Brave Search scraping
   }
 
   async search(query: string, maxResults: number = 10): Promise<SerpResponse> {
     try {
-      if (this.searchEngine === 'brave') {
-        return await this.searchBrave(query, maxResults);
-      } else {
-        return await this.searchDuckDuckGo(query, maxResults);
-      }
+      return await this.searchBrave(query, maxResults);
     } catch (error) {
       return {
         success: false,
@@ -40,62 +34,43 @@ export class SerpAgent {
   }
 
   private async searchBrave(query: string, maxResults: number): Promise<SerpResponse> {
-    if (!this.apiKey) {
-      throw new Error('Brave Search API key required');
-    }
-
-    const response = await fetch(`https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(query)}&count=${maxResults}`, {
+    const searchUrl = `https://search.brave.com/search?q=${encodeURIComponent(query)}`;
+    
+    const response = await fetch(searchUrl, {
       headers: {
-        'X-Subscription-Token': this.apiKey,
-        'Accept': 'application/json'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
       }
     });
 
     if (!response.ok) {
-      throw new Error(`Brave Search API error: ${response.status}`);
+      throw new Error(`Brave Search request failed: ${response.status}`);
     }
 
-    const data = await response.json();
-    const results: SearchResult[] = data.web?.results?.map((result: any, index: number) => ({
-      title: result.title,
-      url: result.url,
-      snippet: result.description,
-      position: index + 1
-    })) || [];
-
-    return {
-      success: true,
-      query,
-      results,
-      totalResults: data.web?.results?.length || 0
-    };
-  }
-
-  private async searchDuckDuckGo(query: string, maxResults: number): Promise<SerpResponse> {
-    // Note: DuckDuckGo doesn't have an official API, so this would need to use
-    // a third-party service or web scraping. For now, this is a placeholder.
+    const html = await response.text();
+    const $ = cheerio.load(html);
     
-    // In a real implementation, you might use a service like:
-    // - SerpAPI
-    // - ScrapingBee
-    // - Or implement web scraping with the browser agent
+    const results: SearchResult[] = [];
+    const searchResults = $('div#results div[data-type="web"] > a');
     
-    const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`);
-    
-    if (!response.ok) {
-      throw new Error(`DuckDuckGo API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    
-    // DuckDuckGo's instant answer API has limited search results
-    // This is a simplified implementation
-    const results: SearchResult[] = data.RelatedTopics?.slice(0, maxResults).map((topic: any, index: number) => ({
-      title: topic.Text?.split(' - ')[0] || 'No title',
-      url: topic.FirstURL || '',
-      snippet: topic.Text || 'No snippet',
-      position: index + 1
-    })).filter((result: SearchResult) => result.url) || [];
+    searchResults.slice(0, maxResults).each((index, element) => {
+      const $element = $(element);
+      const url = $element.attr('href');
+      const title = $element.find('h4, .title').text().trim() || $element.text().trim();
+      
+      // Try to find snippet from nearby elements
+      const snippet = $element.parent().find('.snippet, .description, p').first().text().trim() || 
+                     $element.next().text().trim() || 
+                     'No description available';
+      
+      if (url && title) {
+        results.push({
+          title,
+          url,
+          snippet,
+          position: index + 1
+        });
+      }
+    });
 
     return {
       success: true,
@@ -105,23 +80,12 @@ export class SerpAgent {
     };
   }
 
-  async getSearchSuggestions(query: string): Promise<string[]> {
-    try {
-      const response = await fetch(`https://duckduckgo.com/ac/?q=${encodeURIComponent(query)}&type=list`);
-      const data = await response.json();
-      return data[1] || [];
-    } catch (error) {
-      return [];
-    }
-  }
 }
 
 export async function callSerpAgent(
   query: string,
-  searchEngine: 'brave' | 'duckduckgo' = 'duckduckgo',
-  apiKey?: string,
   maxResults: number = 10
 ): Promise<SerpResponse> {
-  const agent = new SerpAgent(searchEngine, apiKey);
+  const agent = new SerpAgent();
   return await agent.search(query, maxResults);
 }
