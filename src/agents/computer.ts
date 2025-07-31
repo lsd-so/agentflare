@@ -91,59 +91,40 @@ export class ComputerAgent {
     return {
       screenshot: {
         description: 'Take a screenshot of the desktop to see what is currently displayed',
-        parameters: z.object({}),
-        execute: async () => {
-          const screenshot = await this.getScreenshot();
-          return { success: true, screenshot };
-        }
+        parameters: z.object({})
       },
       click: {
         description: 'Click at specific coordinates on the desktop',
         parameters: z.object({
           x: z.number().describe('X coordinate to click'),
           y: z.number().describe('Y coordinate to click')
-        }),
-        execute: async ({ x, y }: { x: number; y: number }) => {
-          return await this.click(x, y);
-        }
+        })
       },
       type: {
         description: 'Type text (keyboard input)',
         parameters: z.object({
           text: z.string().describe('Text to type')
-        }),
-        execute: async ({ text }: { text: string }) => {
-          return await this.type(text);
-        }
+        })
       },
       key: {
         description: 'Press a specific key or key combination',
         parameters: z.object({
           key: z.string().describe('Key to press (e.g., "Enter", "Tab", "Ctrl+C", "Alt+F4")')
-        }),
-        execute: async ({ key }: { key: string }) => {
-          return await this.pressKey(key);
-        }
+        })
       },
       scroll: {
         description: 'Scroll in a specified direction',
         parameters: z.object({
           direction: z.enum(['up', 'down', 'left', 'right']).describe('Direction to scroll'),
           amount: z.number().optional().describe('Amount to scroll (default: 3)')
-        }),
-        execute: async ({ direction, amount = 3 }: { direction: 'up' | 'down' | 'left' | 'right'; amount?: number }) => {
-          return await this.scroll(direction, amount);
-        }
+        })
       },
       move: {
         description: 'Move mouse to specific coordinates without clicking',
         parameters: z.object({
           x: z.number().describe('X coordinate to move to'),
           y: z.number().describe('Y coordinate to move to')
-        }),
-        execute: async ({ x, y }: { x: number; y: number }) => {
-          return await this.moveMouse(x, y);
-        }
+        })
       }
     };
   }
@@ -183,7 +164,39 @@ Always take a screenshot first to see the current desktop state, then proceed wi
           }
         ],
         tools,
-        maxToolRoundtrips: 10
+        maxToolRoundtrips: 10,
+        toolChoice: 'auto',
+        onStepFinish: async (step) => {
+          if (step.toolCalls) {
+            for (const toolCall of step.toolCalls) {
+              let result;
+              switch (toolCall.toolName) {
+                case 'screenshot':
+                  const screenshot = await this.getScreenshot();
+                  result = { success: true, screenshot };
+                  break;
+                case 'click':
+                  result = await this.click(toolCall.args.x, toolCall.args.y);
+                  break;
+                case 'type':
+                  result = await this.type(toolCall.args.text);
+                  break;
+                case 'key':
+                  result = await this.pressKey(toolCall.args.key);
+                  break;
+                case 'scroll':
+                  result = await this.scroll(toolCall.args.direction, toolCall.args.amount || 3);
+                  break;
+                case 'move':
+                  result = await this.moveMouse(toolCall.args.x, toolCall.args.y);
+                  break;
+                default:
+                  result = { success: false, error: 'Unknown tool' };
+              }
+              toolCall.result = result;
+            }
+          }
+        }
       });
 
       return {

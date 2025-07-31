@@ -38,39 +38,19 @@ export class MainAgent {
         description: 'Use this tool to automate web browsers. Can navigate to websites, click elements, type text, take screenshots, and interact with web pages.',
         parameters: z.object({
           prompt: z.string().describe('Natural language description of what you want to do in the browser')
-        }),
-        execute: async ({ prompt }: { prompt: string }) => {
-          const agent = await callBrowserAgent(this.env, prompt, this.baseUrl, this.apiKey);
-          const result = await agent.processWithLLM(prompt);
-          return { message: result.message, success: result.success, error: result.error };
-        }
+        })
       },
       call_computer_agent: {
         description: 'Use this tool to control desktop environments via VNC. Can click anywhere on screen, type text, use keyboard shortcuts, and take screenshots of the desktop.',
         parameters: z.object({
           prompt: z.string().describe('Natural language description of what you want to do on the desktop')
-        }),
-        execute: async ({ prompt }: { prompt: string }) => {
-          const agent = await callComputerAgent(this.env, prompt, this.baseUrl, this.apiKey);
-          const result = await agent.processWithLLM(prompt);
-          return { message: result.message, success: result.success, error: result.error };
-        }
+        })
       },
       call_serp_agent: {
         description: 'Use this tool to search the web and get search results from Brave Search. Returns titles, URLs, and snippets for search results.',
         parameters: z.object({
           query: z.string().describe('The search query to execute')
-        }),
-        execute: async ({ query }: { query: string }) => {
-          const agent = new (await import('./serp')).SerpAgent(this.apiKey);
-          const result = await agent.processWithLLM(query);
-          return {
-            message: result.message,
-            success: result.success,
-            results: result.results,
-            error: result.error
-          };
-        }
+        })
       }
     };
   }
@@ -230,7 +210,32 @@ Use these tools when the user's request requires their capabilities. You can use
           }
         ],
         tools,
-        maxToolRoundtrips: 5
+        maxToolRoundtrips: 5,
+        toolChoice: 'auto',
+        onStepFinish: async (step) => {
+          if (step.toolCalls) {
+            for (const toolCall of step.toolCalls) {
+              if (toolCall.toolName === 'call_browser_agent') {
+                const agent = await callBrowserAgent(this.env, toolCall.args.prompt, this.baseUrl, this.apiKey);
+                const result = await agent.processWithLLM(toolCall.args.prompt);
+                toolCall.result = { message: result.message, success: result.success, error: result.error };
+              } else if (toolCall.toolName === 'call_computer_agent') {
+                const agent = await callComputerAgent(this.env, toolCall.args.prompt, this.baseUrl, this.apiKey);
+                const result = await agent.processWithLLM(toolCall.args.prompt);
+                toolCall.result = { message: result.message, success: result.success, error: result.error };
+              } else if (toolCall.toolName === 'call_serp_agent') {
+                const agent = new (await import('./serp')).SerpAgent(this.apiKey);
+                const result = await agent.processWithLLM(toolCall.args.query);
+                toolCall.result = {
+                  message: result.message,
+                  success: result.success,
+                  results: result.results,
+                  error: result.error
+                };
+              }
+            }
+          }
+        }
       });
 
       return {

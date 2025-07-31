@@ -92,10 +92,7 @@ export class SerpAgent {
         parameters: z.object({
           query: z.string().describe('The search query'),
           maxResults: z.number().optional().describe('Maximum number of results to return (default: 10)')
-        }),
-        execute: async ({ query, maxResults = 10 }: { query: string; maxResults?: number }) => {
-          return await this.search(query, maxResults);
-        }
+        })
       }
     };
   }
@@ -130,7 +127,18 @@ When users ask questions or request information, use the search tool to find rel
           }
         ],
         tools,
-        maxToolRoundtrips: 3
+        maxToolRoundtrips: 3,
+        toolChoice: 'auto',
+        onStepFinish: async (step) => {
+          if (step.toolCalls) {
+            for (const toolCall of step.toolCalls) {
+              if (toolCall.toolName === 'search') {
+                const result = await this.search(toolCall.args.query, toolCall.args.maxResults || 10);
+                toolCall.result = result;
+              }
+            }
+          }
+        }
       });
 
       // Extract search results from tool calls if any

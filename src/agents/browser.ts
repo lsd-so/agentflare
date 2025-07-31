@@ -121,60 +121,36 @@ export class BrowserAgent {
         description: 'Navigate to a specific URL in the browser',
         parameters: z.object({
           url: z.string().describe('The URL to navigate to')
-        }),
-        execute: async ({ url }: { url: string }) => {
-          const result = await this.executeAction({ type: 'navigate', url });
-          return result;
-        }
+        })
       },
       click: {
         description: 'Click on an element using a CSS selector',
         parameters: z.object({
           selector: z.string().describe('CSS selector for the element to click')
-        }),
-        execute: async ({ selector }: { selector: string }) => {
-          const result = await this.executeAction({ type: 'click', selector });
-          return result;
-        }
+        })
       },
       type: {
         description: 'Type text into an input field using a CSS selector',
         parameters: z.object({
           selector: z.string().describe('CSS selector for the input field'),
           text: z.string().describe('Text to type into the field')
-        }),
-        execute: async ({ selector, text }: { selector: string; text: string }) => {
-          const result = await this.executeAction({ type: 'type', selector, text });
-          return result;
-        }
+        })
       },
       screenshot: {
         description: 'Take a screenshot of the current browser page',
-        parameters: z.object({}),
-        execute: async () => {
-          const result = await this.executeAction({ type: 'screenshot' });
-          return result;
-        }
+        parameters: z.object({})
       },
       evaluate: {
         description: 'Execute JavaScript code in the browser context',
         parameters: z.object({
           script: z.string().describe('JavaScript code to execute')
-        }),
-        execute: async ({ script }: { script: string }) => {
-          const result = await this.executeAction({ type: 'evaluate', script });
-          return result;
-        }
+        })
       },
       wait: {
         description: 'Wait for a specified number of milliseconds',
         parameters: z.object({
           timeout: z.number().describe('Number of milliseconds to wait')
-        }),
-        execute: async ({ timeout }: { timeout: number }) => {
-          const result = await this.executeAction({ type: 'wait', timeout });
-          return result;
-        }
+        })
       }
     };
   }
@@ -216,7 +192,38 @@ Always take a screenshot first to see what's on the page, then proceed with the 
           }
         ],
         tools,
-        maxToolRoundtrips: 10
+        maxToolRoundtrips: 10,
+        toolChoice: 'auto',
+        onStepFinish: async (step) => {
+          if (step.toolCalls) {
+            for (const toolCall of step.toolCalls) {
+              let result;
+              switch (toolCall.toolName) {
+                case 'navigate':
+                  result = await this.executeAction({ type: 'navigate', url: toolCall.args.url });
+                  break;
+                case 'click':
+                  result = await this.executeAction({ type: 'click', selector: toolCall.args.selector });
+                  break;
+                case 'type':
+                  result = await this.executeAction({ type: 'type', selector: toolCall.args.selector, text: toolCall.args.text });
+                  break;
+                case 'screenshot':
+                  result = await this.executeAction({ type: 'screenshot' });
+                  break;
+                case 'evaluate':
+                  result = await this.executeAction({ type: 'evaluate', script: toolCall.args.script });
+                  break;
+                case 'wait':
+                  result = await this.executeAction({ type: 'wait', timeout: toolCall.args.timeout });
+                  break;
+                default:
+                  result = { success: false, error: 'Unknown tool' };
+              }
+              toolCall.result = result;
+            }
+          }
+        }
       });
 
       return {
