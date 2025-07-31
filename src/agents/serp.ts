@@ -1,4 +1,7 @@
 import * as cheerio from 'cheerio';
+import { generateText } from 'ai';
+import { anthropic } from '@ai-sdk/anthropic';
+import { z } from 'zod';
 
 export interface SearchResult {
   title: string;
@@ -16,8 +19,10 @@ export interface SerpResponse {
 }
 
 export class SerpAgent {
-  constructor() {
-    // No parameters needed for Brave Search scraping
+  private apiKey: string;
+
+  constructor(apiKey?: string) {
+    this.apiKey = apiKey || '';
   }
 
   async search(query: string, maxResults: number = 10): Promise<SerpResponse> {
@@ -80,12 +85,83 @@ export class SerpAgent {
     };
   }
 
+  private getSearchTools() {
+    return {
+      search: {
+        description: 'Search the web using Brave Search and get search results',
+        parameters: z.object({
+          query: z.string().describe('The search query'),
+          maxResults: z.number().optional().describe('Maximum number of results to return (default: 10)')
+        }),
+        execute: async ({ query, maxResults = 10 }: { query: string; maxResults?: number }) => {
+          return await this.search(query, maxResults);
+        }
+      }
+    };
+  }
+
+  async processWithLLM(prompt: string): Promise<{ success: boolean; message: string; results?: SearchResult[]; error?: string }> {
+    if (!this.apiKey) {
+      return { success: false, message: 'API key required for LLM functionality', error: 'Missing API key' };
+    }
+
+    try {
+      const tools = this.getSearchTools();
+
+      const result = await generateText({
+        model: anthropic('claude-3-5-sonnet-20241022', {
+          apiKey: this.apiKey
+        }),
+        messages: [
+          {
+            role: 'system',
+            content: `You are a web search agent. You can search the web using Brave Search to find information, websites, articles, and answers to questions.
+
+Available tools:
+- search: Search the web for information
+
+When users ask questions or request information, use the search tool to find relevant results. Analyze the search results and provide helpful summaries or direct answers based on what you find.`
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        tools,
+        maxToolRoundtrips: 3
+      });
+
+      // Extract search results from tool calls if any
+      let searchResults: SearchResult[] = [];
+      if (result.toolResults) {
+        for (const toolResult of result.toolResults) {
+          if (toolResult.result && typeof toolResult.result === 'object' && 'results' in toolResult.result) {
+            searchResults = [...searchResults, ...(toolResult.result as any).results];
+          }
+        }
+      }
+
+      return {
+        success: true,
+        message: result.text,
+        results: searchResults
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Failed to process search task',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+
 }
 
 export async function callSerpAgent(
   query: string,
-  maxResults: number = 10
+  maxResults: number = 10,
+  apiKey?: string
 ): Promise<SerpResponse> {
-  const agent = new SerpAgent();
+  const agent = new SerpAgent(apiKey);
   return await agent.search(query, maxResults);
 }

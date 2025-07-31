@@ -15,13 +15,16 @@
     "wrangler": "^4.25.1"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^1.2.12",
     "@cloudflare/containers": "0.0.25",
+    "ai": "^4.3.19",
     "cheerio": "^1.1.2",
     "hono": "4.8.2",
     "jimp": "^1.6.0",
     "puppeteer-core": "^24.15.0",
     "rfb2": "^0.2.2",
-    "vnc-rfb-client": "^0.2.0"
+    "vnc-rfb-client": "^0.2.0",
+    "zod": "^4.0.14"
   },
   "cloudflare": {
     "label": "Containers Starter",

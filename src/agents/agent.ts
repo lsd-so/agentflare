@@ -2,6 +2,9 @@ import { AppBindings } from "../types";
 import { callBrowserAgent } from "./browser";
 import { callComputerAgent } from "./computer";
 import { callSerpAgent, SerpResponse } from "./serp";
+import { generateText } from 'ai';
+import { anthropic } from '@ai-sdk/anthropic';
+import { z } from 'zod';
 
 export interface AgentTask {
   type: 'browser' | 'computer' | 'search' | 'auto';
@@ -21,10 +24,55 @@ export interface AgentResponse {
 export class MainAgent {
   private env: AppBindings;
   private baseUrl: string;
+  private apiKey: string;
 
-  constructor(env: AppBindings, baseUrl?: string) {
+  constructor(env: AppBindings, baseUrl?: string, apiKey?: string) {
     this.env = env;
     this.baseUrl = baseUrl || 'https://agentflare.yev-81d.workers.dev';
+    this.apiKey = apiKey || '';
+  }
+
+  private getTools() {
+    return {
+      call_browser_agent: {
+        description: 'Use this tool to automate web browsers. Can navigate to websites, click elements, type text, take screenshots, and interact with web pages.',
+        parameters: z.object({
+          prompt: z.string().describe('Natural language description of what you want to do in the browser')
+        }),
+        execute: async ({ prompt }: { prompt: string }) => {
+          const agent = await callBrowserAgent(this.env, prompt, this.baseUrl, this.apiKey);
+          const result = await agent.processWithLLM(prompt);
+          return { message: result.message, success: result.success, error: result.error };
+        }
+      },
+      call_computer_agent: {
+        description: 'Use this tool to control desktop environments via VNC. Can click anywhere on screen, type text, use keyboard shortcuts, and take screenshots of the desktop.',
+        parameters: z.object({
+          prompt: z.string().describe('Natural language description of what you want to do on the desktop')
+        }),
+        execute: async ({ prompt }: { prompt: string }) => {
+          const agent = await callComputerAgent(this.env, prompt, this.baseUrl, this.apiKey);
+          const result = await agent.processWithLLM(prompt);
+          return { message: result.message, success: result.success, error: result.error };
+        }
+      },
+      call_serp_agent: {
+        description: 'Use this tool to search the web and get search results from Brave Search. Returns titles, URLs, and snippets for search results.',
+        parameters: z.object({
+          query: z.string().describe('The search query to execute')
+        }),
+        execute: async ({ query }: { query: string }) => {
+          const agent = new (await import('./serp')).SerpAgent(this.apiKey);
+          const result = await agent.processWithLLM(query);
+          return {
+            message: result.message,
+            success: result.success,
+            results: result.results,
+            error: result.error
+          };
+        }
+      }
+    };
   }
 
   async executeTask(task: AgentTask): Promise<AgentResponse> {
@@ -144,16 +192,72 @@ export class MainAgent {
   }
 
   async processNaturalLanguageRequest(request: string): Promise<AgentResponse> {
-    return await this.executeTask({
-      type: 'auto',
-      prompt: request
-    });
+    const startTime = Date.now();
+    
+    if (!this.apiKey) {
+      return {
+        success: false,
+        message: 'API key is required for LLM functionality',
+        taskType: 'error',
+        error: 'Missing API key',
+        executionTime: Date.now() - startTime
+      };
+    }
+
+    try {
+      const tools = this.getTools();
+      
+      const result = await generateText({
+        model: anthropic('claude-3-5-sonnet-20241022', {
+          apiKey: this.apiKey
+        }),
+        messages: [
+          {
+            role: 'system',
+            content: `You are AgentFlare, an AI assistant that can help with web browsing, desktop automation, and search tasks. You have access to three specialized agents:
+
+1. Browser Agent (call_browser_agent): For web automation tasks like navigating websites, clicking buttons, filling forms, taking screenshots
+2. Computer Agent (call_computer_agent): For desktop automation via VNC, clicking anywhere on screen, typing, keyboard shortcuts
+3. SERP Agent (call_serp_agent): For web search to get information from Brave Search
+
+Use these tools when the user's request requires their capabilities. You can use multiple tools in sequence if needed. Always explain what you're doing and provide helpful responses based on the tool results.`
+          },
+          {
+            role: 'user',
+            content: request
+          }
+        ],
+        tools,
+        maxToolRoundtrips: 5
+      });
+
+      return {
+        success: true,
+        message: result.text,
+        taskType: 'llm_powered',
+        data: {
+          toolCalls: result.toolCalls,
+          toolResults: result.toolResults
+        },
+        executionTime: Date.now() - startTime
+      };
+      
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Failed to process request with LLM',
+        taskType: 'error',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        executionTime: Date.now() - startTime
+      };
+    }
   }
 }
 
 export async function createMainAgent(
   env: AppBindings, 
-  baseUrl?: string
+  baseUrl?: string,
+  apiKey?: string
 ): Promise<MainAgent> {
-  return new MainAgent(env, baseUrl);
+  return new MainAgent(env, baseUrl, apiKey);
 }

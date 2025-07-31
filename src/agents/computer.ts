@@ -1,5 +1,8 @@
 import { getContainer } from "@cloudflare/containers";
 import { AppBindings } from "../types";
+import { generateText } from 'ai';
+import { anthropic } from '@ai-sdk/anthropic';
+import { z } from 'zod';
 
 export interface ComputerAction {
   type: 'screenshot' | 'click' | 'type' | 'key' | 'scroll' | 'move';
@@ -21,10 +24,12 @@ export interface ComputerResponse {
 export class ComputerAgent {
   private env: AppBindings;
   private baseUrl: string;
+  private apiKey: string;
 
-  constructor(env: AppBindings, baseUrl?: string) {
+  constructor(env: AppBindings, baseUrl?: string, apiKey?: string) {
     this.env = env;
     this.baseUrl = baseUrl || 'https://agentflare.yev-81d.workers.dev';
+    this.apiKey = apiKey || '';
   }
 
   async executeAction(action: ComputerAction): Promise<ComputerResponse> {
@@ -81,13 +86,124 @@ export class ComputerAgent {
   async moveMouse(x: number, y: number): Promise<ComputerResponse> {
     return await this.executeAction({ type: 'move', x, y });
   }
+
+  private getComputerTools() {
+    return {
+      screenshot: {
+        description: 'Take a screenshot of the desktop to see what is currently displayed',
+        parameters: z.object({}),
+        execute: async () => {
+          const screenshot = await this.getScreenshot();
+          return { success: true, screenshot };
+        }
+      },
+      click: {
+        description: 'Click at specific coordinates on the desktop',
+        parameters: z.object({
+          x: z.number().describe('X coordinate to click'),
+          y: z.number().describe('Y coordinate to click')
+        }),
+        execute: async ({ x, y }: { x: number; y: number }) => {
+          return await this.click(x, y);
+        }
+      },
+      type: {
+        description: 'Type text (keyboard input)',
+        parameters: z.object({
+          text: z.string().describe('Text to type')
+        }),
+        execute: async ({ text }: { text: string }) => {
+          return await this.type(text);
+        }
+      },
+      key: {
+        description: 'Press a specific key or key combination',
+        parameters: z.object({
+          key: z.string().describe('Key to press (e.g., "Enter", "Tab", "Ctrl+C", "Alt+F4")')
+        }),
+        execute: async ({ key }: { key: string }) => {
+          return await this.pressKey(key);
+        }
+      },
+      scroll: {
+        description: 'Scroll in a specified direction',
+        parameters: z.object({
+          direction: z.enum(['up', 'down', 'left', 'right']).describe('Direction to scroll'),
+          amount: z.number().optional().describe('Amount to scroll (default: 3)')
+        }),
+        execute: async ({ direction, amount = 3 }: { direction: 'up' | 'down' | 'left' | 'right'; amount?: number }) => {
+          return await this.scroll(direction, amount);
+        }
+      },
+      move: {
+        description: 'Move mouse to specific coordinates without clicking',
+        parameters: z.object({
+          x: z.number().describe('X coordinate to move to'),
+          y: z.number().describe('Y coordinate to move to')
+        }),
+        execute: async ({ x, y }: { x: number; y: number }) => {
+          return await this.moveMouse(x, y);
+        }
+      }
+    };
+  }
+
+  async processWithLLM(prompt: string): Promise<{ success: boolean; message: string; error?: string }> {
+    if (!this.apiKey) {
+      return { success: false, message: 'API key required for LLM functionality', error: 'Missing API key' };
+    }
+
+    try {
+      const screenshot = await this.getScreenshot();
+      const tools = this.getComputerTools();
+
+      const result = await generateText({
+        model: anthropic('claude-3-5-sonnet-20241022', {
+          apiKey: this.apiKey
+        }),
+        messages: [
+          {
+            role: 'system',
+            content: `You are a computer control agent that can interact with desktop environments via VNC. You can:
+
+- screenshot: Take screenshots to see the desktop
+- click: Click at specific coordinates
+- type: Type text via keyboard
+- key: Press specific keys or key combinations
+- scroll: Scroll in any direction
+- move: Move mouse cursor
+
+Always take a screenshot first to see the current desktop state, then proceed with actions. Be precise with coordinates and explain what you're doing. When clicking, aim for the center of buttons or UI elements.`
+          },
+          {
+            role: 'user',
+            content: `${prompt}${screenshot ? '\n\nCurrent desktop screenshot is attached.' : ''}`
+          }
+        ],
+        tools,
+        maxToolRoundtrips: 10
+      });
+
+      return {
+        success: true,
+        message: result.text
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Failed to process computer task',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
 }
 
 export async function callComputerAgent(
   env: AppBindings,
   prompt: string,
-  baseUrl?: string
+  baseUrl?: string,
+  apiKey?: string
 ): Promise<ComputerAgent> {
-  const agent = new ComputerAgent(env, baseUrl);
+  const agent = new ComputerAgent(env, baseUrl, apiKey);
   return agent;
 }

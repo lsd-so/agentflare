@@ -89,6 +89,40 @@ webRoutes.get("/", (c) => {
             background: #212121;
         }
         
+        .api-key-container {
+            padding: 1rem 0;
+            border-bottom: 1px solid #424242;
+            background: #212121;
+        }
+        
+        .api-key-wrapper {
+            max-width: 768px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        .api-key-field {
+            width: 100%;
+            background: #2f2f2f;
+            border: 1px solid #424242;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            color: #ececec;
+            font-size: 0.875rem;
+        }
+        
+        .api-key-field:focus {
+            outline: none;
+            border-color: #10a37f;
+        }
+        
+        .api-key-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: #8e8ea0;
+        }
+        
         .input-wrapper {
             position: relative;
             display: flex;
@@ -192,6 +226,18 @@ webRoutes.get("/", (c) => {
         <h1>AgentFlare</h1>
     </div>
     
+    <div class="api-key-container">
+        <div class="api-key-wrapper">
+            <label class="api-key-label" for="apiKey">Anthropic API Key (required for LLM functionality)</label>
+            <input 
+                type="password" 
+                id="apiKey" 
+                class="api-key-field" 
+                placeholder="sk-ant-..."
+            />
+        </div>
+    </div>
+    
     <div class="chat-container">
         <div class="messages" id="messages">
             <div class="welcome">
@@ -230,6 +276,7 @@ webRoutes.get("/", (c) => {
         const sendButton = document.getElementById('sendButton');
         const messages = document.getElementById('messages');
         const loading = document.getElementById('loading');
+        const apiKeyInput = document.getElementById('apiKey');
         
         function autoResize() {
             messageInput.style.height = 'auto';
@@ -264,7 +311,13 @@ webRoutes.get("/", (c) => {
         
         async function sendMessage() {
             const message = messageInput.value.trim();
+            const apiKey = apiKeyInput.value.trim();
+            
             if (!message) return;
+            if (!apiKey) {
+                addMessage('Please enter your Anthropic API key first.');
+                return;
+            }
             
             addMessage(message, true);
             messageInput.value = '';
@@ -278,7 +331,7 @@ webRoutes.get("/", (c) => {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ message })
+                    body: JSON.stringify({ message, apiKey })
                 });
                 
                 const data = await response.json();
@@ -309,13 +362,17 @@ webRoutes.get("/", (c) => {
 // Chat endpoint to handle messages from the frontend
 webRoutes.post("/chat", async (c) => {
   try {
-    const { message } = await c.req.json();
+    const { message, apiKey } = await c.req.json();
     
     if (!message || typeof message !== 'string') {
       return c.json({ success: false, error: 'Message is required' });
     }
     
-    const agent = await createMainAgent(c.env, 'https://agentflare.yev-81d.workers.dev');
+    if (!apiKey || typeof apiKey !== 'string') {
+      return c.json({ success: false, error: 'API key is required' });
+    }
+    
+    const agent = await createMainAgent(c.env, 'https://agentflare.yev-81d.workers.dev', apiKey);
     const response = await agent.processNaturalLanguageRequest(message);
     
     return c.json({
