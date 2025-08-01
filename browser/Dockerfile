@@ -30,9 +30,6 @@ RUN chown -R chrome:chrome /var/log/nginx
 RUN chown -R chrome:chrome /var/lib/nginx
 RUN chown -R chrome:chrome /var/lib/nginx/logs/
 
-# Install Node.js dependencies
-RUN bun add express puppeteer-core ai @ai-sdk/anthropic zod
-
 # Copy application files
 COPY app.ts /usr/src/app/app.ts
 COPY supervisord.conf /etc/supervisord.conf
@@ -42,6 +39,9 @@ RUN chown -R chrome:chrome /usr/src/app
 # Run Chrome as non-privileged
 USER chrome
 WORKDIR /usr/src/app
+
+# Install Node.js dependencies
+RUN bun add express puppeteer-core@24.15.0 ai@4.3.19 @ai-sdk/anthropic@1.2.12 zod@3.25.76
 
 ENV CHROME_BIN=/usr/bin/chromium-browser \
     CHROME_PATH=/usr/lib/chromium/ \
