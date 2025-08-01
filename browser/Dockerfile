@@ -47,6 +47,6 @@ ENV CHROME_BIN=/usr/bin/chromium-browser \
     CHROME_PATH=/usr/lib/chromium/ \
     EXPRESS_PORT=3000
 
-EXPOSE 9222 3000 80
+EXPOSE 9222 3000 8080 8081 80
 
 CMD nginx && sudo /usr/bin/supervisord -c /etc/supervisord.conf
