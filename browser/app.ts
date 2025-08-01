@@ -44,7 +44,7 @@ const ensureBrowser = async () => {
 // Get browser automation tools for LLM
 const getBrowserTools = async () => {
   const currentPage = await ensureBrowser();
-  
+
   return {
     navigate: tool({
       description: 'Navigate to a specific URL in the browser',
@@ -216,6 +216,7 @@ app.post('/wait', async (req, res) => {
 
 // Title endpoint for debugging
 app.get('/title', async (req, res) => {
+  console.log("Received a request for title!");
   try {
     const { url } = req.query;
     if (!url) {
@@ -225,12 +226,12 @@ app.get('/title', async (req, res) => {
     const page = await ensureBrowser();
     await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
     const title = await page.title();
-    
-    res.json({ 
-      success: true, 
+
+    res.json({
+      success: true,
       title: title,
       url: url,
-      message: `Page title: "${title}"` 
+      message: `Page title: "${title}"`
     });
   } catch (error) {
     console.error('Title error:', error);

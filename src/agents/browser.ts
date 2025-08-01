@@ -20,7 +20,7 @@ export class BrowserAgent {
 
     try {
       const container = getContainer(this.env.BROWSER_CONTAINER);
-      const request = new Request(`${this.baseUrl}/agent`, {
+      const request = new Request(`http://localhost:3000/agent`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -28,7 +28,7 @@ export class BrowserAgent {
           apiKey: this.apiKey
         })
       });
-      const response = await container.fetch(switchPort(request, 3000));
+      const response = await container.fetch(request);
 
       const result = await response.json();
 
