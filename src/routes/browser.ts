@@ -25,7 +25,7 @@ browserRoutes.get("/title", async (c) => {
   // }
 
   const container = getContainer(c.env.BROWSER_CONTAINER);
-  return await container.fetch(switchPort(c.req.raw, 8081));
+  return await container.fetch(switchPort(c.req.raw, 3000));
 });
 
 export default browserRoutes;
