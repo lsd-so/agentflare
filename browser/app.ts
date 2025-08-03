@@ -17,17 +17,57 @@ let page = null;
 const initializeBrowser = async () => {
   if (!browser) {
     try {
-      browser = await puppeteer.connect({
-        browserWSEndpoint: 'ws://localhost:9222'
-      });
+      console.log('Starting browser initialization process');
 
+      // Step 1: Fetch browser info from /json/version endpoint
+      console.log('Fetching browser info from /json/version endpoint');
+      const versionResponse = await fetch('http://localhost:9222/json/version');
+
+      if (!versionResponse.ok) {
+        throw new Error(`Failed to fetch version info: ${versionResponse.status} ${versionResponse.statusText}`);
+      }
+
+      const versionData = await versionResponse.json();
+      console.log('Browser version data:', JSON.stringify(versionData, null, 2));
+
+      // Step 2: Extract WebSocket debugger URL
+      const wsEndpoint = versionData.webSocketDebuggerUrl;
+      if (!wsEndpoint) {
+        throw new Error('No webSocketDebuggerUrl found in version response');
+      }
+      console.log('Using WebSocket endpoint:', wsEndpoint);
+
+      // Step 3: Connect to Puppeteer using dynamic endpoint
+      console.log('Connecting to Puppeteer with dynamic endpoint');
+      browser = await puppeteer.connect({
+        browserWSEndpoint: wsEndpoint
+      });
+      console.log('Puppeteer connection established successfully');
+
+      // Step 4: Create new page and set viewport
+      console.log('Creating new page and setting viewport');
       page = await browser.newPage();
       await page.setViewport({ width: 1080, height: 1024 });
 
-      console.log('Browser initialized successfully');
+      console.log('Browser initialized successfully with dynamic endpoint');
     } catch (error) {
-      console.error('Failed to initialize browser:', error);
-      throw error;
+      console.error('Failed to initialize browser with dynamic endpoint:', error);
+
+      // Fallback to hardcoded endpoint
+      console.log('Attempting fallback to hardcoded WebSocket endpoint');
+      try {
+        browser = await puppeteer.connect({
+          browserWSEndpoint: 'ws://localhost:9222'
+        });
+
+        page = await browser.newPage();
+        await page.setViewport({ width: 1080, height: 1024 });
+
+        console.log('Browser initialized successfully with fallback endpoint');
+      } catch (fallbackError) {
+        console.error('Fallback initialization also failed:', fallbackError);
+        throw fallbackError;
+      }
     }
   }
   return { browser, page };
@@ -223,7 +263,18 @@ app.get('/title', async (req, res) => {
       return res.status(400).json({ success: false, error: 'URL parameter required' });
     }
 
+    // if (true) {
+    //   return res.json({
+    //     message: "Here is a hardcoded response"
+    //   });
+    // }
+
+    console.log("Going to ensure a browser");
+
     const page = await ensureBrowser();
+
+    console.log("Page should be truthy");
+
     await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
     const title = await page.title();
 
