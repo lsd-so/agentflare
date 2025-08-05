@@ -375,8 +375,6 @@ Always take a screenshot first to see what's on the page, then proceed with the 
             return !screenshotIndices.includes(index) || index === latestScreenshotIndex;
           });
 
-          console.log(`Filtered ${screenshotIndices.length - 1} old screenshots, keeping latest at index ${latestScreenshotIndex}`);
-
           return {
             messages: filteredMessages
           };
