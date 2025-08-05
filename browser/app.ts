@@ -92,7 +92,7 @@ const getBrowserTools = async () => {
         url: z.string().describe('The URL to navigate to')
       }),
       execute: async ({ url }) => {
-        await currentPage.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
+        await currentPage.goto(url, { timeout: 30000 });
         return { success: true, message: `Navigated to ${url}` };
       }
     }),
@@ -159,7 +159,7 @@ app.get('/navigate', async (req, res) => {
     }
 
     const page = await ensureBrowser();
-    await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
+    await page.goto(url, { timeout: 30000 });
 
     res.json({ success: true, message: `Navigated to ${url}` });
   } catch (error) {
@@ -275,7 +275,10 @@ app.get('/title', async (req, res) => {
 
     console.log("Page should be truthy");
 
-    await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
+    await page.goto(url, { timeout: 30000 });
+
+    console.log("Getting title");
+
     const title = await page.title();
 
     res.json({
