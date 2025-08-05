@@ -1,5 +1,6 @@
 const express = require('express');
-const puppeteer = require('puppeteer-core');
+import puppeteer, { KnownDevices } from 'puppeteer-core';
+// const devices = require('puppeteer-core/DeviceDescriptors');
 const { generateText, tool } = require('ai');
 const { createAnthropic } = require('@ai-sdk/anthropic');
 const { z } = require('zod');
@@ -47,7 +48,11 @@ const initializeBrowser = async () => {
       // Step 4: Create new page and set viewport
       console.log('Creating new page and setting viewport');
       page = await browser.newPage();
-      await page.setViewport({ width: 1080, height: 1024 });
+
+      await page.emulate(KnownDevices['iPhone SE']);
+      // await page.setViewport({ width: 375, height: 667 });
+
+      // await page.setViewport({ width: 1080, height: 1024 });
 
       console.log('Browser initialized successfully with dynamic endpoint');
     } catch (error) {
@@ -345,7 +350,7 @@ Always take a screenshot first to see what's on the page, then proceed with the 
       ],
       tools,
       maxSteps: 10,
-      toolChoice: 'auto'
+      toolChoice: 'auto',
     });
 
     res.json({
