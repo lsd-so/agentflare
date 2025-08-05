@@ -351,6 +351,40 @@ Always take a screenshot first to see what's on the page, then proceed with the 
       tools,
       maxSteps: 10,
       toolChoice: 'auto',
+      prepareStep: async ({ messages }) => {
+        // Find all messages containing screenshots
+        const screenshotIndices = [];
+        for (let i = 0; i < messages.length; i++) {
+          const message = messages[i];
+          if (message.role === 'assistant' && message.content) {
+            const content = Array.isArray(message.content) ? message.content : [message.content];
+            const hasScreenshot = content.some(part =>
+              typeof part === 'object' && part.type === 'image'
+            );
+            if (hasScreenshot) {
+              screenshotIndices.push(i);
+            }
+          }
+        }
+
+        // If we have multiple screenshots, remove all but the latest one
+        if (screenshotIndices.length > 1) {
+          const latestScreenshotIndex = screenshotIndices[screenshotIndices.length - 1];
+          const filteredMessages = messages.filter((message, index) => {
+            // Keep all non-screenshot messages and only the latest screenshot
+            return !screenshotIndices.includes(index) || index === latestScreenshotIndex;
+          });
+
+          console.log(`Filtered ${screenshotIndices.length - 1} old screenshots, keeping latest at index ${latestScreenshotIndex}`);
+
+          return {
+            messages: filteredMessages
+          };
+        }
+
+        // No changes needed
+        return { messages };
+      }
     });
 
     res.json({
