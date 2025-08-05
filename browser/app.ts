@@ -98,6 +98,9 @@ const getBrowserTools = async () => {
       parameters: z.object({
         url: z.string().describe('The URL to navigate to')
       }),
+      inputSchema: z.object({
+        url: z.string().describe('The URL to navigate to')
+      }),
       execute: async ({ url }) => {
         await currentPage.goto(url, { timeout: 30000 });
         return { success: true, message: `Navigated to ${url}` };
@@ -105,6 +108,9 @@ const getBrowserTools = async () => {
     }),
     click: tool({
       description: 'Click on an element using a CSS selector',
+      inputSchema: z.object({
+        selector: z.string().describe('CSS selector for the element to click')
+      }),
       parameters: z.object({
         selector: z.string().describe('CSS selector for the element to click')
       }),
@@ -116,6 +122,9 @@ const getBrowserTools = async () => {
     }),
     type: tool({
       description: 'Type text into an input field using a CSS selector',
+      inputSchema: z.object({
+        selector: z.string().describe('CSS selector for the element to click')
+      }),
       parameters: z.object({
         selector: z.string().describe('CSS selector for the input field'),
         text: z.string().describe('Text to type into the field')
@@ -128,6 +137,7 @@ const getBrowserTools = async () => {
     }),
     screenshot: tool({
       description: 'Take a screenshot of the current browser page',
+      inputSchema: z.object({}),
       parameters: z.object({}),
       execute: async () => {
         const screenshot = await currentPage.screenshot({ encoding: 'base64' });
@@ -136,6 +146,9 @@ const getBrowserTools = async () => {
     }),
     evaluate: tool({
       description: 'Execute JavaScript code in the browser context',
+      inputSchema: z.object({
+        script: z.string().describe('JavaScript code to execute')
+      }),
       parameters: z.object({
         script: z.string().describe('JavaScript code to execute')
       }),
@@ -146,6 +159,9 @@ const getBrowserTools = async () => {
     }),
     wait: tool({
       description: 'Wait for a specified number of milliseconds',
+      inputSchema: z.object({
+        timeout: z.number().describe('Number of milliseconds to wait')
+      }),
       parameters: z.object({
         timeout: z.number().describe('Number of milliseconds to wait')
       }),
@@ -327,7 +343,7 @@ app.post('/agent', async (req, res) => {
 
     // Generate response using LLM
     const result = await generateText({
-      model: anthropic('claude-3-5-sonnet-20241022'),
+      model: anthropic('claude-3-7-sonnet-20250219'),
       messages: [
         {
           role: 'system',
