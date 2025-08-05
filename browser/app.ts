@@ -78,6 +78,8 @@ const ensureBrowser = async () => {
   if (!browser || !page) {
     await initializeBrowser();
   }
+
+  // TODO - something to clear or refresh the page when it's requested rather than recycling the same one over and over
   return page;
 };
 
