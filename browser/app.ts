@@ -384,10 +384,15 @@ Use getHTML or getMarkdown to extract text content when analyzing page informati
       // maxSteps: 10,
       toolChoice: 'auto',
       prepareStep: async ({ messages }) => {
-        // Find all messages containing screenshots
+        // Find all messages containing screenshots, HTML, or markdown content
         const screenshotIndices = [];
+        const htmlIndices = [];
+        const markdownIndices = [];
+        
         for (let i = 0; i < messages.length; i++) {
           const message = messages[i];
+          
+          // Check for screenshots in assistant messages
           if (message.role === 'assistant' && message.content) {
             const content = Array.isArray(message.content) ? message.content : [message.content];
             const hasScreenshot = content.some(part =>
@@ -397,24 +402,54 @@ Use getHTML or getMarkdown to extract text content when analyzing page informati
               screenshotIndices.push(i);
             }
           }
+          
+          // Check for HTML/markdown in tool result messages
+          if (message.role === 'tool' && message.content) {
+            const contentStr = typeof message.content === 'string' ? message.content : JSON.stringify(message.content);
+            
+            // Look for HTML tool results (large HTML content)
+            if (contentStr.includes('"html":') && contentStr.length > 1000) {
+              htmlIndices.push(i);
+            }
+            
+            // Look for markdown tool results (large markdown content)
+            if (contentStr.includes('"markdown":') && contentStr.length > 1000) {
+              markdownIndices.push(i);
+            }
+          }
         }
 
-        // If we have multiple screenshots, remove all but the latest one
+        // Collect all indices to filter
+        const indicesToFilter = new Set();
+        
+        // Keep only the latest screenshot
         if (screenshotIndices.length > 1) {
-          const latestScreenshotIndex = screenshotIndices[screenshotIndices.length - 1];
+          screenshotIndices.slice(0, -1).forEach(index => indicesToFilter.add(index));
+        }
+        
+        // Keep only the latest HTML result
+        if (htmlIndices.length > 1) {
+          htmlIndices.slice(0, -1).forEach(index => indicesToFilter.add(index));
+        }
+        
+        // Keep only the latest markdown result
+        if (markdownIndices.length > 1) {
+          markdownIndices.slice(0, -1).forEach(index => indicesToFilter.add(index));
+        }
+
+        // If we have content to filter, remove old instances
+        if (indicesToFilter.size > 0) {
           const filteredMessages = messages.filter((message, index) => {
-            // Keep all non-screenshot messages and only the latest screenshot
-            return !screenshotIndices.includes(index) || index === latestScreenshotIndex;
+            return !indicesToFilter.has(index);
           });
 
-          console.log(`Reducing from ${messages.length} messages to ${filteredMessages.length}`);
-
+          console.log(`Filtered ${indicesToFilter.size} old content messages, keeping ${filteredMessages.length}/${messages.length} messages`);
+          
           return {
             messages: filteredMessages
           };
         }
 
-        console.log(`we have ${screenshotIndices.length} screenshot calls`);
         // No changes needed
         return { messages };
       }
