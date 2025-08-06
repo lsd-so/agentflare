@@ -377,7 +377,7 @@ Available tools:
 - getHTML: Get the full HTML content of the current page
 - getMarkdown: Get the page content converted to markdown format
 
-Always take a screenshot first to see what's on the page, then proceed with the requested actions. Use getHTML or getMarkdown to extract text content when analyzing page information. Be precise with CSS selectors and explain what you're doing. You must finish with text answering or responding to the user prompt`,
+Use getHTML or getMarkdown to extract text content when analyzing page information. Be precise with CSS selectors and explain what you're doing. Answer the user prompt directly with text rather than just point at the screen that's visible to you`,
       prompt: `${prompt}${screenshot ? '\n\nCurrent page screenshot is attached.' : ''}`,
       tools,
       stopWhen: stepCountIs(4),
