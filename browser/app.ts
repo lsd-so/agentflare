@@ -380,7 +380,7 @@ Available tools:
 Use getHTML or getMarkdown to extract text content when analyzing page information. Be precise with CSS selectors and explain what you're doing. Answer the user prompt directly with text rather than just point at the screen that's visible to you`,
       prompt: `${prompt}${screenshot ? '\n\nCurrent page screenshot is attached.' : ''}`,
       tools,
-      stopWhen: stepCountIs(4),
+      stopWhen: stepCountIs(3),
       // maxSteps: 10,
       toolChoice: 'auto',
       prepareStep: async ({ messages }) => {
@@ -433,7 +433,8 @@ Use getHTML or getMarkdown to extract text content when analyzing page informati
       success: true,
       message: result.text,
       toolCalls: result.toolCalls,
-      toolResults: result.toolResults
+      toolResults: result.toolResults,
+
     });
 
   } catch (error) {

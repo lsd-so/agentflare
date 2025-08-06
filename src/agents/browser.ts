@@ -30,15 +30,17 @@ export class BrowserAgent {
       });
       const response = await container.fetch(request);
 
-      const result = await response.json();
+      const result = await response.json() as Record<string, any>;
 
       if (result.success) {
         return {
+          ...result,
           success: true,
           message: result.message
         };
       } else {
         return {
+          ...result,
           success: false,
           message: 'Failed to process browser task',
           error: result.error
