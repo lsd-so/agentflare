@@ -414,7 +414,6 @@ Use getHTML or getMarkdown to extract text content when analyzing page informati
           };
         }
 
-        console.log("Doing no changes to steps?");
         console.log(`we have ${screenshotIndices.length} screenshot calls`);
         // No changes needed
         return { messages };
