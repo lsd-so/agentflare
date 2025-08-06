@@ -1,9 +1,10 @@
 const express = require('express');
 import puppeteer, { KnownDevices } from 'puppeteer-core';
 // const devices = require('puppeteer-core/DeviceDescriptors');
-const { generateText, tool } = require('ai');
+const { generateText, tool, stepCountIs } = require('ai');
 const { createAnthropic } = require('@ai-sdk/anthropic');
 const { z } = require('zod');
+const TurndownService = require('turndown');
 
 const app = express();
 const port = 3000;
@@ -168,6 +169,26 @@ const getBrowserTools = async () => {
       execute: async ({ timeout }) => {
         await new Promise(resolve => setTimeout(resolve, timeout));
         return { success: true, message: `Waited ${timeout}ms` };
+      }
+    }),
+    getHTML: tool({
+      description: 'Get the HTML content of the current browser page',
+      inputSchema: z.object({}),
+      parameters: z.object({}),
+      execute: async () => {
+        const html = await currentPage.content();
+        return { success: true, html };
+      }
+    }),
+    getMarkdown: tool({
+      description: 'Get the markdown content of the current browser page by converting HTML to markdown',
+      inputSchema: z.object({}),
+      parameters: z.object({}),
+      execute: async () => {
+        const html = await currentPage.content();
+        const turndownService = new TurndownService();
+        const markdown = turndownService.turndown(html);
+        return { success: true, markdown };
       }
     })
   };
@@ -344,10 +365,7 @@ app.post('/agent', async (req, res) => {
     // Generate response using LLM
     const result = await generateText({
       model: anthropic('claude-3-7-sonnet-20250219'),
-      messages: [
-        {
-          role: 'system',
-          content: `You are a browser automation agent running inside a Chromium container. You can navigate websites, interact with elements, take screenshots, and execute JavaScript.
+      system: `You are a browser agent running inside a Chromium container. You can navigate websites, interact with elements, take screenshots, execute JavaScript, and extract content.
 
 Available tools:
 - navigate: Go to URLs
@@ -356,16 +374,14 @@ Available tools:
 - screenshot: Take screenshots to see current page
 - evaluate: Execute JavaScript code
 - wait: Wait for specified time
+- getHTML: Get the full HTML content of the current page
+- getMarkdown: Get the page content converted to markdown format
 
-Always take a screenshot first to see what's on the page, then proceed with the requested actions. Be precise with CSS selectors and explain what you're doing.`
-        },
-        {
-          role: 'user',
-          content: `${prompt}${screenshot ? '\n\nCurrent page screenshot is attached.' : ''}`
-        }
-      ],
+Always take a screenshot first to see what's on the page, then proceed with the requested actions. Use getHTML or getMarkdown to extract text content when analyzing page information. Be precise with CSS selectors and explain what you're doing. You must finish with text answering or responding to the user prompt`,
+      prompt: `${prompt}${screenshot ? '\n\nCurrent page screenshot is attached.' : ''}`,
       tools,
-      maxSteps: 10,
+      stopWhen: stepCountIs(10),
+      // maxSteps: 10,
       toolChoice: 'auto',
       prepareStep: async ({ messages }) => {
         // Find all messages containing screenshots
@@ -391,15 +407,27 @@ Always take a screenshot first to see what's on the page, then proceed with the 
             return !screenshotIndices.includes(index) || index === latestScreenshotIndex;
           });
 
+          console.log(`Reducing from ${messages.length} messages to ${filteredMessages.length}`);
+
           return {
             messages: filteredMessages
           };
         }
 
+        console.log("Doing no changes to steps?");
+        console.log(`we have ${screenshotIndices.length} screenshot calls`);
         // No changes needed
         return { messages };
       }
     });
+
+    console.log("we have made it through to the following result");
+    console.log(result);
+    console.log("~");
+    console.log("Which consists of the following steps");
+    console.log(result.steps);
+    console.log("and messages?");
+    console.log(result.messages);
 
     res.json({
       success: true,

@@ -41,7 +41,7 @@ USER chrome
 WORKDIR /usr/src/app
 
 # Install Node.js dependencies
-RUN bun add express puppeteer-core@24.15.0 ai@5.0.2 @ai-sdk/anthropic@2.0.0 zod@4.0.14
+RUN bun add express puppeteer-core@24.15.0 ai@5.0.2 @ai-sdk/anthropic@2.0.0 zod@4.0.14 turndown@7.2.0
 
 ENV CHROME_BIN=/usr/bin/chromium-browser \
     CHROME_PATH=/usr/lib/chromium/ \
