@@ -380,7 +380,7 @@ Available tools:
 Always take a screenshot first to see what's on the page, then proceed with the requested actions. Use getHTML or getMarkdown to extract text content when analyzing page information. Be precise with CSS selectors and explain what you're doing. You must finish with text answering or responding to the user prompt`,
       prompt: `${prompt}${screenshot ? '\n\nCurrent page screenshot is attached.' : ''}`,
       tools,
-      stopWhen: stepCountIs(10),
+      stopWhen: stepCountIs(2),
       // maxSteps: 10,
       toolChoice: 'auto',
       prepareStep: async ({ messages }) => {
