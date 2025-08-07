@@ -41,7 +41,7 @@ export class MainAgent {
           console.log("Going to call browser agent");
           const result = await callBrowserAgent(this.env, prompt, this.apiKey);
           console.log("Got back results from browser");
-          return { ...result, message: result.message, success: result.success, error: result.error };
+          return { /* ...result, */ message: result.message, success: result.success, error: result.error };
         }
       }),
       call_computer_agent: tool({
@@ -237,7 +237,7 @@ Use these tools when the user's request requires their capabilities. You can use
       });
 
       return {
-        ...result,
+        /* ...result, */
         success: true,
         message: result.text,
         taskType: 'llm_powered',
