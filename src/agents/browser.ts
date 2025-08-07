@@ -4,11 +4,9 @@ import { AppBindings } from "../types";
 
 export class BrowserAgent {
   private env: AppBindings;
-  private baseUrl: string;
   private apiKey: string;
-  constructor(env: AppBindings, baseUrl?: string, apiKey?: string) {
+  constructor(env: AppBindings, apiKey?: string) {
     this.env = env;
-    this.baseUrl = baseUrl || 'https://agentflare.yev-81d.workers.dev';
     this.apiKey = apiKey || '';
   }
 
@@ -59,10 +57,9 @@ export class BrowserAgent {
 export async function callBrowserAgent(
   env: AppBindings,
   prompt: string,
-  baseUrl?: string,
   apiKey?: string
 ): Promise<{ success: boolean; message: string; error?: string }> {
-  const agent = new BrowserAgent(env, baseUrl, apiKey);
+  const agent = new BrowserAgent(env, apiKey);
   return await agent.processWithLLM(prompt);
 }
 

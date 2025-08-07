@@ -23,12 +23,10 @@ export interface AgentResponse {
 
 export class MainAgent {
   private env: AppBindings;
-  private baseUrl: string;
   private apiKey: string;
 
-  constructor(env: AppBindings, baseUrl?: string, apiKey?: string) {
+  constructor(env: AppBindings, apiKey?: string) {
     this.env = env;
-    this.baseUrl = baseUrl || 'https://agentflare.yev-81d.workers.dev';
     this.apiKey = apiKey || '';
   }
 
@@ -41,7 +39,7 @@ export class MainAgent {
         }),
         execute: async ({ prompt }) => {
           console.log("Going to call browser agent");
-          const result = await callBrowserAgent(this.env, prompt, this.baseUrl, this.apiKey);
+          const result = await callBrowserAgent(this.env, prompt, this.apiKey);
           console.log("Got back results from browser");
           return { ...result, message: result.message, success: result.success, error: result.error };
         }
@@ -53,7 +51,7 @@ export class MainAgent {
         }),
         execute: async ({ prompt }) => {
           console.log("Going to call computer agent");
-          const agent = await callComputerAgent(this.env, prompt, this.baseUrl, this.apiKey);
+          const agent = await callComputerAgent(this.env, prompt, this.apiKey);
           const result = await agent.processWithLLM(prompt);
           console.log("Got back results from computer");
           return { message: result.message, success: result.success, error: result.error };
@@ -113,7 +111,7 @@ export class MainAgent {
   }
 
   private async delegateToBrowser(task: AgentTask, startTime: number): Promise<AgentResponse> {
-    const result = await callBrowserAgent(this.env, task.prompt, this.baseUrl, this.apiKey);
+    const result = await callBrowserAgent(this.env, task.prompt, this.apiKey);
 
     return {
       success: result.success,
@@ -125,7 +123,7 @@ export class MainAgent {
   }
 
   private async delegateToComputer(task: AgentTask, startTime: number): Promise<AgentResponse> {
-    const computerAgent = await callComputerAgent(this.env, task.prompt, this.baseUrl);
+    const computerAgent = await callComputerAgent(this.env, task.prompt);
 
     return {
       success: true,
@@ -265,8 +263,7 @@ Use these tools when the user's request requires their capabilities. You can use
 
 export async function createMainAgent(
   env: AppBindings,
-  baseUrl?: string,
   apiKey?: string
 ): Promise<MainAgent> {
-  return new MainAgent(env, baseUrl, apiKey);
+  return new MainAgent(env, apiKey);
 }
