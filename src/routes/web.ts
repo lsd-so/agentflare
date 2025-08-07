@@ -372,7 +372,7 @@ webRoutes.post("/chat", async (c) => {
       return c.json({ success: false, error: 'API key is required' });
     }
 
-    const agent = await createMainAgent(c.env, 'https://agentflare.yev-81d.workers.dev', apiKey);
+    const agent = await createMainAgent(c.env, apiKey);
     const response = await agent.processNaturalLanguageRequest(message);
 
     return c.json({
