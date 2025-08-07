@@ -51,7 +51,7 @@ const initializeBrowser = async () => {
       page = await browser.newPage();
 
       await page.emulate(KnownDevices['iPhone SE']);
-      // await page.setViewport({ width: 375, height: 667 });
+      await page.setViewport({ width: 375, height: 667 });
 
       // await page.setViewport({ width: 1080, height: 1024 });
 
@@ -377,7 +377,7 @@ Available tools:
 - getHTML: Get the full HTML content of the current page
 - getMarkdown: Get the page content converted to markdown format
 
-Use getHTML or getMarkdown to extract text content when analyzing page information. Be precise with CSS selectors and explain what you're doing. Answer the user prompt directly with text rather than just point at the screen that's visible to you`,
+Use HTML or markdown when answering about information on a page. Answer the user prompt directly with text rather than just describe what's on the screen`,
       prompt: `${prompt}${screenshot ? '\n\nCurrent page screenshot is attached.' : ''}`,
       tools,
       stopWhen: stepCountIs(3),
@@ -388,10 +388,10 @@ Use getHTML or getMarkdown to extract text content when analyzing page informati
         const screenshotIndices = [];
         const htmlIndices = [];
         const markdownIndices = [];
-        
+
         for (let i = 0; i < messages.length; i++) {
           const message = messages[i];
-          
+
           // Check for screenshots in assistant messages
           if (message.role === 'assistant' && message.content) {
             const content = Array.isArray(message.content) ? message.content : [message.content];
@@ -402,16 +402,16 @@ Use getHTML or getMarkdown to extract text content when analyzing page informati
               screenshotIndices.push(i);
             }
           }
-          
+
           // Check for HTML/markdown in tool result messages
           if (message.role === 'tool' && message.content) {
             const contentStr = typeof message.content === 'string' ? message.content : JSON.stringify(message.content);
-            
+
             // Look for HTML tool results (large HTML content)
             if (contentStr.includes('"html":') && contentStr.length > 1000) {
               htmlIndices.push(i);
             }
-            
+
             // Look for markdown tool results (large markdown content)
             if (contentStr.includes('"markdown":') && contentStr.length > 1000) {
               markdownIndices.push(i);
@@ -421,17 +421,17 @@ Use getHTML or getMarkdown to extract text content when analyzing page informati
 
         // Collect all indices to filter
         const indicesToFilter = new Set();
-        
+
         // Keep only the latest screenshot
         if (screenshotIndices.length > 1) {
           screenshotIndices.slice(0, -1).forEach(index => indicesToFilter.add(index));
         }
-        
+
         // Keep only the latest HTML result
         if (htmlIndices.length > 1) {
           htmlIndices.slice(0, -1).forEach(index => indicesToFilter.add(index));
         }
-        
+
         // Keep only the latest markdown result
         if (markdownIndices.length > 1) {
           markdownIndices.slice(0, -1).forEach(index => indicesToFilter.add(index));
@@ -443,25 +443,14 @@ Use getHTML or getMarkdown to extract text content when analyzing page informati
             return !indicesToFilter.has(index);
           });
 
-          console.log(`Filtered ${indicesToFilter.size} old content messages, keeping ${filteredMessages.length}/${messages.length} messages`);
-          
           return {
             messages: filteredMessages
           };
         }
-
         // No changes needed
         return { messages };
       }
     });
-
-    console.log("we have made it through to the following result");
-    console.log(result);
-    console.log("~");
-    console.log("Which consists of the following steps");
-    console.log(result.steps);
-    console.log("and messages?");
-    console.log(result.messages);
 
     res.json({
       success: true,
