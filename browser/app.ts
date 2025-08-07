@@ -382,8 +382,7 @@ Available tools:
 Answer the user prompt directly with text rather than just describe what's on the screen. Do NOT get a screenshot unless to identify where or how to act next; use HTML or markdown when answering about content on a page.`,
       prompt,
       tools,
-      maxSteps: 4,
-      // maxSteps: 10,
+      stopWhen: stepCountIs(5),
       toolChoice: 'auto',
       prepareStep: async ({ messages }) => {
         // Find all messages containing screenshots, HTML, or markdown content
