@@ -196,6 +196,7 @@ const getBrowserTools = async () => {
         const html = await currentPage.content();
         const turndownService = new TurndownService();
         const markdown = turndownService.turndown(html);
+        console.log("Done procuring the markdown");
         return { success: true, markdown };
       }
     })
