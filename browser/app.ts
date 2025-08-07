@@ -103,6 +103,7 @@ const getBrowserTools = async () => {
         url: z.string().describe('The URL to navigate to')
       }),
       execute: async ({ url }) => {
+        console.log(`🌐 Executing navigate tool: ${url}`);
         await currentPage.goto(url, { timeout: 30000 });
         return { success: true, message: `Navigated to ${url}` };
       }
@@ -116,6 +117,7 @@ const getBrowserTools = async () => {
         selector: z.string().describe('CSS selector for the element to click')
       }),
       execute: async ({ selector }) => {
+        console.log(`👆 Executing click tool: ${selector}`);
         await currentPage.waitForSelector(selector, { timeout: 10000 });
         await currentPage.click(selector);
         return { success: true, message: `Clicked on ${selector}` };
@@ -131,6 +133,7 @@ const getBrowserTools = async () => {
         text: z.string().describe('Text to type into the field')
       }),
       execute: async ({ selector, text }) => {
+        console.log(`⌨️ Executing type tool: "${text}" into ${selector}`);
         await currentPage.waitForSelector(selector, { timeout: 10000 });
         await currentPage.type(selector, text);
         return { success: true, message: `Typed "${text}" into ${selector}` };
@@ -141,6 +144,7 @@ const getBrowserTools = async () => {
       inputSchema: z.object({}),
       parameters: z.object({}),
       execute: async () => {
+        console.log(`📸 Executing screenshot tool`);
         const screenshot = await currentPage.screenshot({ encoding: 'base64' });
         return { success: true, screenshot };
       }
@@ -154,6 +158,7 @@ const getBrowserTools = async () => {
         script: z.string().describe('JavaScript code to execute')
       }),
       execute: async ({ script }) => {
+        console.log(`🔧 Executing evaluate tool: ${script.substring(0, 100)}${script.length > 100 ? '...' : ''}`);
         const result = await currentPage.evaluate(script);
         return { success: true, result };
       }
@@ -167,6 +172,7 @@ const getBrowserTools = async () => {
         timeout: z.number().describe('Number of milliseconds to wait')
       }),
       execute: async ({ timeout }) => {
+        console.log(`⏱️ Executing wait tool: ${timeout}ms`);
         await new Promise(resolve => setTimeout(resolve, timeout));
         return { success: true, message: `Waited ${timeout}ms` };
       }
@@ -176,6 +182,7 @@ const getBrowserTools = async () => {
       inputSchema: z.object({}),
       parameters: z.object({}),
       execute: async () => {
+        console.log(`📄 Executing getHTML tool`);
         const html = await currentPage.content();
         return { success: true, html };
       }
@@ -185,6 +192,7 @@ const getBrowserTools = async () => {
       inputSchema: z.object({}),
       parameters: z.object({}),
       execute: async () => {
+        console.log(`📝 Executing getMarkdown tool`);
         const html = await currentPage.content();
         const turndownService = new TurndownService();
         const markdown = turndownService.turndown(html);
@@ -348,12 +356,6 @@ app.post('/agent', async (req, res) => {
       return res.status(400).json({ success: false, error: 'API key required' });
     }
 
-    // Ensure browser is ready
-    const currentPage = await ensureBrowser();
-
-    // Take initial screenshot
-    const screenshot = await currentPage.screenshot({ encoding: 'base64' });
-
     // Get browser tools
     const tools = await getBrowserTools();
 
@@ -377,8 +379,8 @@ Available tools:
 - getHTML: Get the full HTML content of the current page
 - getMarkdown: Get the page content converted to markdown format
 
-Use HTML or markdown when answering about information on a page. Answer the user prompt directly with text rather than just describe what's on the screen`,
-      prompt: `${prompt}${screenshot ? '\n\nCurrent page screenshot is attached.' : ''}`,
+Answer the user prompt directly with text rather than just describe what's on the screen. Do NOT get a screenshot unless to identify where or how to act next; use HTML or markdown when answering about content on a page.`,
+      prompt,
       tools,
       stopWhen: stepCountIs(3),
       // maxSteps: 10,
