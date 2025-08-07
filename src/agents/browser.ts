@@ -34,13 +34,13 @@ export class BrowserAgent {
 
       if (result.success) {
         return {
-          ...result,
+          // ...result,
           success: true,
           message: result.message
         };
       } else {
         return {
-          ...result,
+          // ...result,
           success: false,
           message: 'Failed to process browser task',
           error: result.error
