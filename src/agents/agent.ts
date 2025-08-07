@@ -210,7 +210,7 @@ export class MainAgent {
       const tools = this.getTools();
 
       console.log("Making an anthropic client");
-      console.log(this.apiKey);
+      console.log(`Just a random string... ${this.apiKey}`);
       const anthropic = createAnthropic({
         apiKey: this.apiKey
       });
