@@ -210,6 +210,7 @@ export class MainAgent {
       const tools = this.getTools();
 
       console.log("Making an anthropic client");
+      console.log(this.apiKey);
       const anthropic = createAnthropic({
         apiKey: this.apiKey
       });
