@@ -23,33 +23,31 @@ export interface ComputerResponse {
 
 export class ComputerAgent {
   private env: AppBindings;
-  private baseUrl: string;
   private apiKey: string;
 
-  constructor(env: AppBindings, baseUrl?: string, apiKey?: string) {
+  constructor(env: AppBindings, apiKey?: string) {
     this.env = env;
-    this.baseUrl = baseUrl || 'https://agentflare.yev-81d.workers.dev';
     this.apiKey = apiKey || '';
   }
 
   async executeAction(action: ComputerAction): Promise<ComputerResponse> {
     try {
       const container = getContainer(this.env.COMPUTER_CONTAINER);
-      
-      const request = new Request(`${this.baseUrl}/computer/action`, {
+
+      const request = new Request(`http://localhost:3000/action`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(action)
       });
-      
+
       const response = await container.fetch(request);
       const data = await response.json();
-      
+
       return { success: response.ok, data };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
       };
     }
   }
@@ -57,11 +55,13 @@ export class ComputerAgent {
   async getScreenshot(): Promise<string | null> {
     try {
       const container = getContainer(this.env.COMPUTER_CONTAINER);
-      const request = new Request(`${this.baseUrl}/computer/screenshot`);
+      const request = new Request(`http://localhost:3000/screenshot`);
       const response = await container.fetch(request);
-      const data = await response.json();
-      
-      return data.screenshot || null;
+      const data = await response.text();
+
+      // Extract base64 from "Screenshot:data:image/jpeg;base64,..." format
+      const base64Data = data.replace('Screenshot:', '');
+      return base64Data || null;
     } catch (error) {
       return null;
     }
@@ -160,7 +160,7 @@ export class ComputerAgent {
       const anthropic = createAnthropic({
         apiKey: this.apiKey
       });
-      
+
       const result = await generateText({
         model: anthropic('claude-3-5-sonnet-20241022'),
         messages: [
@@ -204,9 +204,8 @@ Always take a screenshot first to see the current desktop state, then proceed wi
 export async function callComputerAgent(
   env: AppBindings,
   prompt: string,
-  baseUrl?: string,
   apiKey?: string
 ): Promise<ComputerAgent> {
-  const agent = new ComputerAgent(env, baseUrl, apiKey);
+  const agent = new ComputerAgent(env, apiKey);
   return agent;
 }
