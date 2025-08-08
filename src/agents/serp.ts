@@ -40,6 +40,8 @@ export class SerpAgent {
 
   private async searchBrave(query: string, maxResults: number): Promise<SerpResponse> {
     const searchUrl = `https://search.brave.com/search?q=${encodeURIComponent(query)}`;
+    console.log(`🔍 SERP: Starting Brave search for query: "${query}"`);
+    console.log(`🔍 SERP: Search URL: ${searchUrl}`);
     
     const response = await fetch(searchUrl, {
       headers: {
@@ -47,25 +49,52 @@ export class SerpAgent {
       }
     });
 
+    console.log(`🔍 SERP: HTTP response status: ${response.status}`);
     if (!response.ok) {
       throw new Error(`Brave Search request failed: ${response.status}`);
     }
 
     const html = await response.text();
+    console.log(`🔍 SERP: Received HTML response (${html.length} characters)`);
+    
     const $ = cheerio.load(html);
     
     const results: SearchResult[] = [];
     const searchResults = $('div#results div[data-type="web"] > a');
+    console.log(`🔍 SERP: Found ${searchResults.length} search result elements with selector: 'div#results div[data-type="web"] > a'`);
+    
+    // Debug: Try alternative selectors if main one doesn't work
+    if (searchResults.length === 0) {
+      console.log('🔍 SERP: No results with main selector, trying alternatives...');
+      const altSelectors = [
+        'div#results a[href]',
+        '.result a[href]',
+        '[data-type="web"] a',
+        '.web-result a',
+        'div.result a'
+      ];
+      
+      for (const selector of altSelectors) {
+        const altResults = $(selector);
+        console.log(`🔍 SERP: Selector '${selector}' found ${altResults.length} elements`);
+      }
+    }
     
     searchResults.slice(0, maxResults).each((index, element) => {
       const $element = $(element);
       const url = $element.attr('href');
       const title = $element.find('h4, .title').text().trim() || $element.text().trim();
       
+      console.log(`🔍 SERP: Processing result ${index + 1}:`);
+      console.log(`🔍 SERP:   - URL: ${url}`);
+      console.log(`🔍 SERP:   - Title: "${title}"`);
+      
       // Try to find snippet from nearby elements
       const snippet = $element.parent().find('.snippet, .description, p').first().text().trim() || 
                      $element.next().text().trim() || 
                      'No description available';
+      
+      console.log(`🔍 SERP:   - Snippet: "${snippet.substring(0, 100)}${snippet.length > 100 ? '...' : ''}"`);
       
       if (url && title) {
         results.push({
@@ -74,9 +103,13 @@ export class SerpAgent {
           snippet,
           position: index + 1
         });
+        console.log(`🔍 SERP:   ✅ Added to results`);
+      } else {
+        console.log(`🔍 SERP:   ❌ Skipped (missing url or title)`);
       }
     });
 
+    console.log(`🔍 SERP: Final results count: ${results.length}`);
     return {
       success: true,
       query,
@@ -94,24 +127,32 @@ export class SerpAgent {
           maxResults: z.number().optional().describe('Maximum number of results to return (default: 10)')
         }),
         execute: async ({ query, maxResults = 10 }) => {
-          return await this.search(query, maxResults);
+          console.log(`🔍 SERP Tool: Executing search for "${query}" with max results: ${maxResults}`);
+          const result = await this.search(query, maxResults);
+          console.log(`🔍 SERP Tool: Search completed. Success: ${result.success}, Results: ${result.results.length}`);
+          return result;
         }
       })
     };
   }
 
   async processWithLLM(prompt: string): Promise<{ success: boolean; message: string; results?: SearchResult[]; error?: string }> {
+    console.log(`🔍 SERP LLM: Processing prompt: "${prompt}"`);
+    
     if (!this.apiKey) {
+      console.log(`🔍 SERP LLM: ❌ No API key provided`);
       return { success: false, message: 'API key required for LLM functionality', error: 'Missing API key' };
     }
 
     try {
       const tools = this.getSearchTools();
+      console.log(`🔍 SERP LLM: Created search tools`);
 
       const anthropic = createAnthropic({
         apiKey: this.apiKey
       });
       
+      console.log(`🔍 SERP LLM: Starting LLM generation...`);
       const result = await generateText({
         model: anthropic('claude-3-5-sonnet-20241022'),
         messages: [
@@ -134,22 +175,30 @@ When users ask questions or request information, use the search tool to find rel
         toolChoice: 'auto'
       });
 
+      console.log(`🔍 SERP LLM: LLM generation completed`);
+      console.log(`🔍 SERP LLM: Tool calls made: ${result.toolCalls?.length || 0}`);
+      console.log(`🔍 SERP LLM: Tool results received: ${result.toolResults?.length || 0}`);
+
       // Extract search results from tool calls if any
       let searchResults: SearchResult[] = [];
       if (result.toolResults) {
         for (const toolResult of result.toolResults) {
           if (toolResult.result && typeof toolResult.result === 'object' && 'results' in toolResult.result) {
+            const resultCount = (toolResult.result as any).results.length;
+            console.log(`🔍 SERP LLM: Extracted ${resultCount} search results from tool result`);
             searchResults = [...searchResults, ...(toolResult.result as any).results];
           }
         }
       }
 
+      console.log(`🔍 SERP LLM: ✅ Final response - Total results: ${searchResults.length}`);
       return {
         success: true,
         message: result.text,
         results: searchResults
       };
     } catch (error) {
+      console.log(`🔍 SERP LLM: ❌ Error:`, error);
       return {
         success: false,
         message: 'Failed to process search task',
