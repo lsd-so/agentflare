@@ -63,7 +63,7 @@ export class MainAgent {
           query: z.string().describe('The search query to execute')
         }),
         execute: async ({ query }) => {
-          console.log("Going to call serp agent");
+          console.log("Going to call serp agent?");
           const results = await callSerpAgent(query, 10, this.apiKey);
           console.log("Got back results from serp");
           return {
@@ -87,6 +87,7 @@ export class MainAgent {
         case 'computer':
           return await this.delegateToComputer(task, startTime);
         case 'search':
+          console.log("We are doing a delegate?!");
           return await this.delegateToSearch(task, startTime);
         case 'auto':
           return await this.autoSelectAgent(task, startTime);
