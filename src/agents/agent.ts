@@ -209,13 +209,10 @@ export class MainAgent {
     try {
       const tools = this.getTools();
 
-      console.log("Making an anthropic client");
-      console.log(`Just a random string... ${this.apiKey}`);
       const anthropic = createAnthropic({
         apiKey: this.apiKey
       });
 
-      console.log("Generating text");
       const result = await generateText({
         model: anthropic('claude-3-5-sonnet-20241022'),
         messages: [
@@ -239,7 +236,6 @@ Use these tools when the user's request requires their capabilities. You can use
         toolChoice: 'auto'
       });
 
-      console.log("Generating text was a success");
       return {
         /* ...result, */
         success: true,
