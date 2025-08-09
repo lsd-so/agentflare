@@ -42,10 +42,6 @@ export class MainAgent {
     console.log(`🔍 DIRECT SEARCH: Starting Brave search for query: "${query}"`);
     console.log(`🔍 DIRECT SEARCH: Search URL: ${searchUrl}`);
 
-    if (true) {
-      return { success: true, results: [] };
-    }
-
     try {
       const response = await fetch(searchUrl, {
         headers: {
@@ -56,6 +52,10 @@ export class MainAgent {
       console.log(`🔍 DIRECT SEARCH: HTTP response status: ${response.status}`);
       if (!response.ok) {
         throw new Error(`Brave Search request failed: ${response.status}`);
+      }
+
+      if (true) {
+        return { success: true, results: [] };
       }
 
       const html = await response.text();
