@@ -59,7 +59,7 @@ export class MainAgent {
       }
 
       const html = await response.text();
-      console.log(`🔍 DIRECT SEARCH: Received HTML response [${html.length} characters]`);
+      console.log(`🔍 DIRECT SEARCH: Received HTML response (${html.length} characters)`);
 
       const $ = cheerio.load(html);
 
