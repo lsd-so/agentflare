@@ -63,7 +63,7 @@ export class MainAgent {
           query: z.string().describe('The search query to execute')
         }),
         execute: async ({ query }) => {
-          console.log("Going to call serp agent?");
+          console.log(`Intending to call serp agent with the query [${query}]`);
           // const results = await callSerpAgent(query, 10, this.apiKey);
           const results = {
             results: [],
