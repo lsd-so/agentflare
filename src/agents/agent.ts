@@ -64,7 +64,12 @@ export class MainAgent {
         }),
         execute: async ({ query }) => {
           console.log("Going to call serp agent?");
-          const results = await callSerpAgent(query, 10, this.apiKey);
+          // const results = await callSerpAgent(query, 10, this.apiKey);
+          const results = {
+            results: [],
+            success: true,
+            error: undefined,
+          }
           console.log("Got back results from serp");
           return {
             message: `Found ${results.results.length} search results for "${query}"`,
