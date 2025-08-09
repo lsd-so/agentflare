@@ -1,15 +1,22 @@
 import { AppBindings } from "../types";
 import { callBrowserAgent } from "./browser";
 import { callComputerAgent } from "./computer";
-import { callSerpAgent, SerpResponse } from "./serp";
 import { generateText, tool } from 'ai';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { z } from 'zod';
+import * as cheerio from 'cheerio';
 
 export interface AgentTask {
   type: 'browser' | 'computer' | 'search' | 'auto';
   prompt: string;
   context?: string;
+}
+
+export interface SearchResult {
+  title: string;
+  url: string;
+  snippet: string;
+  position: number;
 }
 
 export interface AgentResponse {
@@ -28,6 +35,86 @@ export class MainAgent {
   constructor(env: AppBindings, apiKey?: string) {
     this.env = env;
     this.apiKey = apiKey || '';
+  }
+
+  private async searchBrave(query: string, maxResults: number = 10): Promise<{ success: boolean; results: SearchResult[]; error?: string }> {
+    const searchUrl = `https://search.brave.com/search?q=${encodeURIComponent(query)}`;
+    console.log(`🔍 DIRECT SEARCH: Starting Brave search for query: "${query}"`);
+    console.log(`🔍 DIRECT SEARCH: Search URL: ${searchUrl}`);
+    
+    try {
+      const response = await fetch(searchUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+      });
+
+      console.log(`🔍 DIRECT SEARCH: HTTP response status: ${response.status}`);
+      if (!response.ok) {
+        throw new Error(`Brave Search request failed: ${response.status}`);
+      }
+
+      const html = await response.text();
+      console.log(`🔍 DIRECT SEARCH: Received HTML response (${html.length} characters)`);
+      
+      const $ = cheerio.load(html);
+      
+      const results: SearchResult[] = [];
+      const searchResults = $('div#results div[data-type="web"] > a');
+      console.log(`🔍 DIRECT SEARCH: Found ${searchResults.length} search result elements`);
+      
+      // Debug: Try alternative selectors if main one doesn't work
+      if (searchResults.length === 0) {
+        console.log('🔍 DIRECT SEARCH: No results with main selector, trying alternatives...');
+        const altSelectors = [
+          'div#results a[href]',
+          '.result a[href]',
+          '[data-type="web"] a',
+          '.web-result a',
+          'div.result a'
+        ];
+        
+        for (const selector of altSelectors) {
+          const altResults = $(selector);
+          console.log(`🔍 DIRECT SEARCH: Selector '${selector}' found ${altResults.length} elements`);
+        }
+      }
+      
+      searchResults.slice(0, maxResults).each((index, element) => {
+        const $element = $(element);
+        const url = $element.attr('href');
+        const title = $element.find('h4, .title').text().trim() || $element.text().trim();
+        
+        console.log(`🔍 DIRECT SEARCH: Processing result ${index + 1}: "${title}"`);
+        
+        // Try to find snippet from nearby elements
+        const snippet = $element.parent().find('.snippet, .description, p').first().text().trim() || 
+                       $element.next().text().trim() || 
+                       'No description available';
+        
+        if (url && title) {
+          results.push({
+            title,
+            url,
+            snippet,
+            position: index + 1
+          });
+          console.log(`🔍 DIRECT SEARCH: ✅ Added result ${index + 1}`);
+        } else {
+          console.log(`🔍 DIRECT SEARCH: ❌ Skipped result ${index + 1} (missing url or title)`);
+        }
+      });
+
+      console.log(`🔍 DIRECT SEARCH: Final results count: ${results.length}`);
+      return { success: true, results };
+    } catch (error) {
+      console.log(`🔍 DIRECT SEARCH: ❌ Error:`, error);
+      return { 
+        success: false, 
+        results: [], 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
   }
 
   private getTools() {
@@ -57,26 +144,30 @@ export class MainAgent {
           return { message: result.message, success: result.success, error: result.error };
         }
       }),
-      call_serp_agent: tool({
-        description: 'Use this tool to search the web and get search results from Brave Search. Returns titles, URLs, and snippets for search results.',
+      search_web: tool({
+        description: 'Search the web using Brave Search and get search results with titles, URLs, and snippets.',
         parameters: z.object({
-          query: z.string().describe('The search query to execute')
+          query: z.string().describe('The search query to execute'),
+          maxResults: z.number().optional().describe('Maximum number of results to return (default: 10)')
         }),
-        execute: async ({ query }) => {
-          console.log(`Intending to call serp agent with the query [${query}]`);
-          // const results = await callSerpAgent(query, 10, this.apiKey);
-          const results = {
-            results: [],
-            success: true,
-            error: undefined,
+        execute: async ({ query, maxResults = 10 }) => {
+          console.log(`🔍 TOOL: Executing web search for "${query}" with max results: ${maxResults}`);
+          const searchResult = await this.searchBrave(query, maxResults);
+          console.log(`🔍 TOOL: Search completed. Success: ${searchResult.success}, Results: ${searchResult.results.length}`);
+          
+          if (searchResult.success) {
+            return {
+              message: `Found ${searchResult.results.length} search results for "${query}"`,
+              success: true,
+              results: searchResult.results
+            };
+          } else {
+            return {
+              message: `Search failed for query: "${query}"`,
+              success: false,
+              error: searchResult.error
+            };
           }
-          console.log("Got back results from serp");
-          return {
-            message: `Found ${results.results.length} search results for "${query}"`,
-            success: results.success,
-            results: results.results,
-            error: results.error
-          };
         }
       })
     };
@@ -141,21 +232,24 @@ export class MainAgent {
   }
 
   private async delegateToSearch(task: AgentTask, startTime: number): Promise<AgentResponse> {
-    const searchResults = await callSerpAgent(task.prompt);
+    console.log(`🔍 DELEGATE: Starting direct search for: "${task.prompt}"`);
+    const searchResults = await this.searchBrave(task.prompt);
 
     if (searchResults.success) {
       const resultsText = searchResults.results
         .map(result => `${result.title}: ${result.snippet} (${result.url})`)
         .join('\n');
 
+      console.log(`🔍 DELEGATE: ✅ Search successful - ${searchResults.results.length} results`);
       return {
         success: true,
         message: `Found ${searchResults.results.length} search results for "${task.prompt}":\n\n${resultsText}`,
         taskType: 'search',
-        data: searchResults,
+        data: { results: searchResults.results },
         executionTime: Date.now() - startTime
       };
     } else {
+      console.log(`🔍 DELEGATE: ❌ Search failed: ${searchResults.error}`);
       return {
         success: false,
         message: `Search failed for query: "${task.prompt}"`,
@@ -227,11 +321,11 @@ export class MainAgent {
         messages: [
           {
             role: 'system',
-            content: `You are AgentFlare, an AI assistant that can help with web browsing, desktop automation, and search tasks. You have access to three specialized agents:
+            content: `You are AgentFlare, an AI assistant that can help with web browsing, desktop automation, and search tasks. You have access to three specialized tools:
 
 1. Browser Agent (call_browser_agent): For web automation tasks like navigating websites, clicking buttons, filling forms, taking screenshots
-2. Computer Agent (call_computer_agent): For desktop automation via VNC, clicking anywhere on screen, typing, keyboard shortcuts
-3. SERP Agent (call_serp_agent): For web search to get information from Brave Search
+2. Computer Agent (call_computer_agent): For desktop automation via VNC, clicking anywhere on screen, typing, keyboard shortcuts  
+3. Web Search (search_web): For searching the web and getting information from Brave Search
 
 Use these tools when the user's request requires their capabilities. You can use multiple tools in sequence if needed. Always explain what you're doing and provide helpful responses based on the tool results.`
           },
