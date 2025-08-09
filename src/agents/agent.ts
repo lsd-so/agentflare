@@ -55,7 +55,7 @@ export class MainAgent {
       }
 
       const html = await response.text();
-      console.log(`🔍 DIRECT SEARCH: Received HTML response (${html.length} characters)`);
+      console.log(`🔍 DIRECT SEARCH: Received HTML response [${html.length} characters]`);
 
       if (true) {
         return { success: true, results: [] };
