@@ -41,7 +41,11 @@ export class MainAgent {
     const searchUrl = `https://search.brave.com/search?q=${encodeURIComponent(query)}`;
     console.log(`🔍 DIRECT SEARCH: Starting Brave search for query: "${query}"`);
     console.log(`🔍 DIRECT SEARCH: Search URL: ${searchUrl}`);
-    
+
+    if (true) {
+      return { success: true, results: [] };
+    }
+
     try {
       const response = await fetch(searchUrl, {
         headers: {
@@ -56,13 +60,13 @@ export class MainAgent {
 
       const html = await response.text();
       console.log(`🔍 DIRECT SEARCH: Received HTML response (${html.length} characters)`);
-      
+
       const $ = cheerio.load(html);
-      
+
       const results: SearchResult[] = [];
       const searchResults = $('div#results div[data-type="web"] > a');
       console.log(`🔍 DIRECT SEARCH: Found ${searchResults.length} search result elements`);
-      
+
       // Debug: Try alternative selectors if main one doesn't work
       if (searchResults.length === 0) {
         console.log('🔍 DIRECT SEARCH: No results with main selector, trying alternatives...');
@@ -73,25 +77,25 @@ export class MainAgent {
           '.web-result a',
           'div.result a'
         ];
-        
+
         for (const selector of altSelectors) {
           const altResults = $(selector);
           console.log(`🔍 DIRECT SEARCH: Selector '${selector}' found ${altResults.length} elements`);
         }
       }
-      
+
       searchResults.slice(0, maxResults).each((index, element) => {
         const $element = $(element);
         const url = $element.attr('href');
         const title = $element.find('h4, .title').text().trim() || $element.text().trim();
-        
+
         console.log(`🔍 DIRECT SEARCH: Processing result ${index + 1}: "${title}"`);
-        
+
         // Try to find snippet from nearby elements
-        const snippet = $element.parent().find('.snippet, .description, p').first().text().trim() || 
-                       $element.next().text().trim() || 
-                       'No description available';
-        
+        const snippet = $element.parent().find('.snippet, .description, p').first().text().trim() ||
+          $element.next().text().trim() ||
+          'No description available';
+
         if (url && title) {
           results.push({
             title,
@@ -109,10 +113,10 @@ export class MainAgent {
       return { success: true, results };
     } catch (error) {
       console.log(`🔍 DIRECT SEARCH: ❌ Error:`, error);
-      return { 
-        success: false, 
-        results: [], 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      return {
+        success: false,
+        results: [],
+        error: error instanceof Error ? error.message : 'Unknown error'
       };
     }
   }
@@ -154,7 +158,7 @@ export class MainAgent {
           console.log(`🔍 TOOL: Executing web search for "${query}" with max results: ${maxResults}`);
           const searchResult = await this.searchBrave(query, maxResults);
           console.log(`🔍 TOOL: Search completed. Success: ${searchResult.success}, Results: ${searchResult.results.length}`);
-          
+
           if (searchResult.success) {
             return {
               message: `Found ${searchResult.results.length} search results for "${query}"`,
