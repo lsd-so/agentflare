@@ -54,12 +54,12 @@ export class MainAgent {
         throw new Error(`Brave Search request failed: ${response.status}`);
       }
 
+      const html = await response.text();
+      console.log(`🔍 DIRECT SEARCH: Received HTML response (${html.length} characters)`);
+
       if (true) {
         return { success: true, results: [] };
       }
-
-      const html = await response.text();
-      console.log(`🔍 DIRECT SEARCH: Received HTML response (${html.length} characters)`);
 
       const $ = cheerio.load(html);
 
