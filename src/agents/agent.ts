@@ -5,6 +5,7 @@ import { generateText, tool } from 'ai';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { z } from 'zod';
 import * as cheerio from 'cheerio';
+import axios from 'axios';
 
 export interface AgentTask {
   type: 'browser' | 'computer' | 'search' | 'auto';
@@ -43,23 +44,22 @@ export class MainAgent {
     console.log(`🔍 DIRECT SEARCH: Search URL: ${searchUrl}`);
 
     try {
-      const response = await fetch(searchUrl, {
+      console.log(`🔍 DIRECT SEARCH: Making axios request...`);
+      const response = await axios.get(searchUrl, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
+        },
+        timeout: 10000, // 10 second timeout
+        validateStatus: (status) => status < 500 // Don't throw for 4xx status codes
       });
 
       console.log(`🔍 DIRECT SEARCH: HTTP response status: ${response.status}`);
-      if (!response.ok) {
-        throw new Error(`Brave Search request failed: ${response.status}`);
+      if (response.status !== 200) {
+        throw new Error(`Brave Search request failed: ${response.status} ${response.statusText}`);
       }
 
-      if (true) {
-        return { success: true, results: [] };
-      }
-
-      const html = await response.text();
-      console.log(`🔍 DIRECT SEARCH: Received HTML response (${html.length} characters)`);
+      const html = response.data;
+      console.log(`🔍 DIRECT SEARCH: Received HTML response (${typeof html === 'string' ? html.length : 'non-string'} characters)`);
 
       const $ = cheerio.load(html);
 
