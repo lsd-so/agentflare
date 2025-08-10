@@ -155,7 +155,7 @@ export class MainAgent {
           maxResults: z.number().optional().describe('Maximum number of results to return (default: 10)')
         }),
         execute: async ({ query, maxResults = 10 }) => {
-          console.log(`🔍 TOOL: Executing web search for "${query}" with max results: ${maxResults}`);
+          console.log(`🔍 TOOL: Executing web search target "${query}" with max results: ${maxResults}`);
           const searchResult = await this.searchBrave(query, maxResults);
           console.log(`🔍 TOOL: Search completed. Success: ${searchResult.success}, Results: ${searchResult.results.length}`);
 
