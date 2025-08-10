@@ -43,13 +43,21 @@ export class MainAgent {
     console.log(`🔍 DIRECT SEARCH: Starting Brave search for query: "${query}"`);
     console.log(`🔍 DIRECT SEARCH: Search URL: ${searchUrl}`);
 
+    if (true) {
+      return {
+        success: true,
+        results: [],
+        error: undefined,
+      }
+    }
+
     try {
       console.log(`🔍 DIRECT SEARCH: Making axios request...`);
       const response = await axios.get(searchUrl, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         },
-        timeout: 10000, // 10 second timeout
+        timeout: 5000, // 5 second timeout
         validateStatus: (status) => status < 500 // Don't throw for 4xx status codes
       });
 
@@ -156,12 +164,7 @@ export class MainAgent {
         }),
         execute: async ({ query, maxResults = 10 }) => {
           console.log(`🔍 TOOL: Executing web search target "${query}" with max results: ${maxResults}`);
-          // const searchResult = await this.searchBrave(query, maxResults);
-          const searchResult = {
-            success: true,
-            results: [],
-            error: undefined,
-          }
+          const searchResult = await this.searchBrave(query, maxResults);
           console.log(`🔍 TOOL: Search completed. Success: ${searchResult.success}, Results: ${searchResult.results.length}`);
 
           if (searchResult.success) {
