@@ -43,14 +43,6 @@ export class MainAgent {
     console.log(`🔍 DIRECT SEARCH: Starting Brave search for query: "${query}"`);
     console.log(`🔍 DIRECT SEARCH: Search URL: ${searchUrl}`);
 
-    if (true) {
-      return {
-        success: true,
-        results: [],
-        error: undefined,
-      }
-    }
-
     try {
       console.log(`🔍 DIRECT SEARCH: Making axios request...`);
       const response = await axios.get(searchUrl, {
@@ -62,6 +54,15 @@ export class MainAgent {
       });
 
       console.log(`🔍 DIRECT SEARCH: HTTP response status: ${response.status}`);
+
+      if (true) {
+        return {
+          success: true,
+          results: [],
+          error: undefined,
+        }
+      }
+
       if (response.status !== 200) {
         throw new Error(`Brave Search request failed: ${response.status} ${response.statusText}`);
       }
