@@ -156,7 +156,12 @@ export class MainAgent {
         }),
         execute: async ({ query, maxResults = 10 }) => {
           console.log(`🔍 TOOL: Executing web search target "${query}" with max results: ${maxResults}`);
-          const searchResult = await this.searchBrave(query, maxResults);
+          // const searchResult = await this.searchBrave(query, maxResults);
+          const searchResult = {
+            success: true,
+            results: [],
+            error: undefined,
+          }
           console.log(`🔍 TOOL: Search completed. Success: ${searchResult.success}, Results: ${searchResult.results.length}`);
 
           if (searchResult.success) {
