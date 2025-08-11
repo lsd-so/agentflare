@@ -313,21 +313,8 @@ app.post('/wait', async (req, res) => {
   }
 });
 
-// Title endpoint for debugging
-app.get('/title', async (req, res) => {
-  console.log("Received a request for title!");
+const getTitleFromPage = async (url: string, retry?: boolean): Promise<string> => {
   try {
-    const { url } = req.query;
-    if (!url) {
-      return res.status(400).json({ success: false, error: 'URL parameter required' });
-    }
-
-    // if (true) {
-    //   return res.json({
-    //     message: "Here is a hardcoded response"
-    //   });
-    // }
-
     console.log("Going to ensure a browser");
 
     const page = await ensureBrowser();
@@ -338,8 +325,28 @@ app.get('/title', async (req, res) => {
 
     console.log("Getting title");
 
-    const title = await page.title();
+    return await page.title();
+  } catch (e) {
+    if (!retry) {
+      // If an error is encountered, wait half a second before trying again
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return getTitleFromPage(url, true);
+    }
 
+    throw e;
+  }
+}
+
+// Title endpoint for debugging
+app.get('/title', async (req, res) => {
+  console.log("Received a request for title!");
+  try {
+    const { url } = req.query;
+    if (!url) {
+      return res.status(400).json({ success: false, error: 'URL parameter required' });
+    }
+
+    const title = await getTitleFromPage(url);
     res.json({
       success: true,
       title: title,
