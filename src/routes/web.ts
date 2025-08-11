@@ -151,7 +151,7 @@ webRoutes.get("/", (c) => {
         function addMessage(content, isUser = false) {
             const messageDiv = document.createElement('div');
             // messageDiv.className = \`nes-balloon \${isUser ? 'from-right' : 'from-left'}\`;
-            messageDiv.innerHTML = \`<div class="nes-balloon \${isUser ? 'from-right' : 'from-left'}">\${content.replace('\\n', '<br/>')}</div>\`;
+            messageDiv.innerHTML = \`<div class="nes-balloon \${isUser ? 'from-right' : 'from-left'}">\${content.replaceAll('\\n', '<br/>')}</div>\`;
             
             // Remove initial message if it exists
             const initial = document.querySelector('#initial');
