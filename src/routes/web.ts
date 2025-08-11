@@ -69,7 +69,8 @@ webRoutes.get("/", (c) => {
             <label for="apiKey">Anthropic API Key (required for LLM functionality)</label>
             <input 
                 type="password" 
-                id="apiKey" 
+                id="apiKey"
+                class="nes-input"
                 placeholder="sk-ant-..."
             />
         </div>
@@ -96,6 +97,7 @@ webRoutes.get("/", (c) => {
                 <textarea 
                     id="messageInput" 
                     placeholder="Message AgentFlare..."
+                    class="nes-textarea"
                     rows="1"
                 ></textarea>
                 <button id="sendButton">
