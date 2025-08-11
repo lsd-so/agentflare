@@ -109,9 +109,7 @@ webRoutes.get("/", (c) => {
             </div>
         </div>
         
-        <div id="loading">
-            <i class="nes-octocat animate"></i>
-        </div>
+        <i id="loading" class="nes-octocat animate"></i>
         
         <div>
             <div id="chat-input-container">
