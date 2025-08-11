@@ -50,11 +50,13 @@ webRoutes.get("/", (c) => {
                 display: flex;
                 flex: 1;
                 flex-direction: column;
-                overflow-y: scroll;
+                padding-top: 8px;
+                padding-bottom: 8px;
         }
 
         #messages {
                 flex: 1;
+                overflow-y: scroll;
         }
 
         #initial {
