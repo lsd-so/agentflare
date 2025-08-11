@@ -1,0 +1,73 @@
+html, body, pre, code, kbd, samp {
+    font-family: "Press Start 2P", system-ui;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 12px;
+}
+
+#banner {
+    display: flex;
+    justify-content: center;
+}
+
+#api-key-container {
+    display: flex;
+    align-items: center;
+}
+
+#api-key-container > label {
+    text-wrap: nowrap;
+    margin-right: 8px;
+}
+
+#messages-container {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    overflow: auto;
+}
+
+#messages {
+    flex: 1;
+    overflow-y: scroll;
+}
+
+#initial {
+    max-width: 640px;
+    margin-right: auto;
+    margin-left: auto;
+    padding-top: 10vh;
+}
+
+#initial img {
+    width: 200px;
+    height: 200px;
+}
+
+#chat-input-container {
+    display: flex;
+}
+
+#chat-input-container > textarea {
+    margin-right: 6px;
+}
+
+#chat-input-container > button {
+    margin-left: 6px;
+}
+
+#loading {
+    display: none;
+    position: relative;
+}
+
+#loading i {
+    position: absolute;
+    bottom: 0;
+}
