@@ -105,7 +105,7 @@ webRoutes.get("/", (c) => {
     
     <div>
         <div id="api-key-container">
-            <label for="api-key">Anthropic API key</label>
+            <label for="api-key">Anthropic API key:</label>
             <input 
                 type="password" 
                 id="api-key"
