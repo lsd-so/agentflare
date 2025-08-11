@@ -13,7 +13,7 @@ webRoutes.get("/", (c) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgentFlare</title>
+    <title>AgentFlare!</title>
     <style>
         * {
             margin: 0;

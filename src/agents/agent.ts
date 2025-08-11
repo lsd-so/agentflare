@@ -52,7 +52,7 @@ export class MainAgent {
           headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
           },
-          timeout: 5000, // 5 second timeout
+          timeout: 3500, // 3.5 second timeout
           validateStatus: (status) => status < 500 // Don't throw for 4xx status codes
         });
 
@@ -119,7 +119,7 @@ export class MainAgent {
       } catch (error) {
         lastError = error instanceof Error ? error : new Error('Unknown error');
         console.log(`🔍 DIRECT SEARCH: ❌ Attempt ${attempt} failed:`, lastError.message);
-        
+
         if (attempt < 3) {
           console.log(`🔍 DIRECT SEARCH: Retrying in 1 second... (${3 - attempt} attempts remaining)`);
           await new Promise(resolve => setTimeout(resolve, 1000));
