@@ -99,7 +99,7 @@ webRoutes.get("/", (c) => {
     
     <div>
         <div id="api-key-container">
-            <label for="api-key">Anthropic API Key (required for LLM functionality)</label>
+            <label for="api-key">Anthropic API key</label>
             <input 
                 type="password" 
                 id="api-key"
