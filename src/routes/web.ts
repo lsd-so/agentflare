@@ -115,7 +115,7 @@ webRoutes.get("/", (c) => {
     <div id="messages-container">
         <div id="messages">
             <div id="initial">
-                <img src="/otter.png"/>
+                <img src="/otter.png" alt="Cartoon otter as a reference to Cloudflare's mascot"/>
                 <p>I can help you with web browsing, desktop automation, and search tasks. What would you like me to do?</p>
             </div>
         </div>
