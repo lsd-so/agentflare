@@ -1,35 +1,64 @@
-## AGENT TODO
+## TODO
 
-- Architecture
-  - Top level agent (that does the work)
-  - call_browser_agent (tool that starts off agent for working with a browser)
-  - call_computer_agent (tool that starts off agent for working with a computer)
-  - call_serp_agent (tool that starts off agent for making requests to brave/duckduckgo)
-  
-- browser_agent
-  - has tools relating to iterating on puppeteer
-  - clears screenshot tool call and tool output when requesting a new screenshot
+- MCP server
+- Something in browser to check if exceeding context window is bc html and to instead get markdown
+- Something in computer to check if exceeding context window is bc screenshot and to instead clear prior messages/tool calls except for system/user/screenshot then proceed
+- Prompt engineering so examples below can have succinct inputs (w/o explicitly saying to use certain tool etc)
 
-- computer_agent
-  - has tools relating to iterating on computer with vnc
-  - clears screenshot tool call and tool output when requesting a new screenshot
-  
-- serp agent
-  - has one tool to perform request for SERP
-  - does NOT clear previous results (google fu)
+# Agentflare
 
-- Set up HTTP endpoints for computer container to
-  - Get screenshot as base64 string
-  - Do other actions as defined by computer use
-- Set up agent for specifically handling computer container usage (and ends up with string output)
-- Set up tools for interfacing with browser container
+This project provides an agent that can use a [web browser](#using-chromium) and/or computer to fulfill tasks specified by a user using Cloudflare [Workers](https://developers.cloudflare.com/workers/) and [containers](https://developers.cloudflare.com/containers/).
 
-- Make HTTP web app as part of supervisord
-  - This is interface to doing/reading things with computer
-- Make tools for interfacing with containers
-- Make tool for brave SERP (doesn't block bots)
-- Make simple loop to carry out a simple task (that's accessible via web app)
-- Bundle into MCP server that can also be deployed onto cloudflare or run locally
+This was inspired by the recent [OpenAI Agent](https://openai.com/index/introducing-chatgpt-agent/) and how its rather simple capabilities were constrained in terms of available usages.
+
+## Contents
+
+* [Usage](#usage)
+  * [Search example](#search-example)
+  * [Browser example](#browser-example)
+  * [Computer example](#computer-example)
+  * [Search and browser example](#search-and-browser-example)
+  * [Browser and computer example](#browser-and-computer-example)
+* [Architecture](#explanation)
+  * [Using Chromium](#using-chromium)
+  * [Using computer](#using-computer)
+* [Developing](#developing)
+  * [Running on your own Cloudflare account](#running-on-your-own-cloudflare-account)
+  * [Running locally with miniflare](#running-locally-with-miniflare)
+
+## Usage
+
+### Search example
+
+Here is an example of using search to get some news
+
+### Browser example
+
+Here is an example of using a browser to get page content then summarizing
+
+### Computer example
+
+Here is an example of using a terminal to run python
+
+### Search and browser example
+
+Here is an example of using search to get links and then get html/markdown to then summarize
+
+### Browser and computer example
+
+Here is an example of using a browser to get a code snippet and then running it on computer
+
+## Explanation
+
+Breakdown of how computer use is architected. Shout out to openai computer using agent only needing browser. Then breakdown of this
+
+### Using Chromium
+
+[security](https://chromium-review.googlesource.com/c/chromium/src/+/952522)
+
+### Using computer
+
+This utilizes some of the same dependencies as [Anthropic's computer use](https://github.com/anthropics/anthropic-quickstarts/tree/main/computer-use-demo)
 
 # Containers Starter
 
