@@ -50,9 +50,12 @@ webRoutes.get("/", (c) => {
                 display: flex;
         }
 
-        #chat-input-container > * {
-                margin-left: 5px;
+        #chat-input-container > textarea {
                 margin-right: 5px;
+        }
+
+        #chat-input-container > button {
+                margin-left: 5px;
         }
         
         .loading {
