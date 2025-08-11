@@ -125,7 +125,7 @@ webRoutes.get("/", (c) => {
     <div id="messages-container">
         <div id="messages">
             <div id="initial">
-                <h2>Welcome to AgentFlare</h2>
+                <i class="nes-octocat animate"></li>
                 <p>I can help you with web browsing, desktop automation, and search tasks. What would you like me to do?</p>
             </div>
         </div>
