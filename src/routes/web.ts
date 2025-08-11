@@ -78,7 +78,7 @@ webRoutes.get("/", (c) => {
         .loading {
             display: none;
             padding: 1rem;
-            background: #1a1a1a;
+            background: #212529;
             margin-right: 3rem;
             border-radius: 8px;
         }
