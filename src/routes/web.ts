@@ -110,7 +110,7 @@ webRoutes.get("/", (c) => {
     <div id="messages-container">
         <div id="messages">
             <div id="initial">
-                <i class="snes-jp-logo"></i>
+                <img src="/otter.png"/>
                 <p>I can help you with web browsing, desktop automation, and search tasks. What would you like me to do?</p>
             </div>
         </div>
@@ -270,5 +270,10 @@ webRoutes.get("/singleton", async (c) => {
   });
   return await container.fetch(modifiedRequest);
 });
+
+// Serve the NES-style otter
+webRoutes.get("/otter.png", async (c) => {
+  return c.env.ASSETS.fetch(c.req.raw);
+})
 
 export default webRoutes;
