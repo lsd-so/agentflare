@@ -51,11 +51,11 @@ webRoutes.get("/", (c) => {
         }
 
         #chat-input-container > textarea {
-                margin-right: 5px;
+                margin-right: 6px;
         }
 
         #chat-input-container > button {
-                margin-left: 5px;
+                margin-left: 6px;
         }
         
         .loading {
