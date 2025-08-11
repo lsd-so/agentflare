@@ -50,6 +50,7 @@ webRoutes.get("/", (c) => {
                 display: flex;
                 flex: 1;
                 flex-direction: column;
+                overflow-y: scroll;
         }
 
         #messages {
@@ -180,8 +181,8 @@ webRoutes.get("/", (c) => {
         
         function addMessage(content, isUser = false) {
             const messageDiv = document.createElement('div');
-            messageDiv.className = \`message \${isUser ? 'user' : 'assistant'}\`;
-            messageDiv.innerHTML = \`<div class="message-content">\${content}</div>\`;
+            // messageDiv.className = \`nes-balloon \${isUser ? 'from-right' : 'from-left'}\`;
+            messageDiv.innerHTML = \`<div class="nes-balloon \${isUser ? 'from-right' : 'from-left'}">\${content}</div>\`;
             
             // Remove initial message if it exists
             const initial = document.querySelector('#initial');
