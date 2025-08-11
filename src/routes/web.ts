@@ -1,14 +1,9 @@
 import { Hono } from "hono";
-import { loadBalance, getContainer } from "@cloudflare/containers";
+import { getContainer } from "@cloudflare/containers";
 import { AppBindings } from "../types";
 import { createMainAgent } from "../agents/agent";
 
 const webRoutes = new Hono<{ Bindings: AppBindings }>();
-
-// // Home route with ChatGPT-style interface
-// webRoutes.get("/", (c) => {
-//   return c.html(html);
-// });
 
 // Chat endpoint to handle messages from the frontend
 webRoutes.post("/chat", async (c) => {
