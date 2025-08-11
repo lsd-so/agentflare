@@ -57,7 +57,7 @@ webRoutes.get("/", (c) => {
         }
 
         #initial {
-                max-width: 480px;
+                max-width: 640px;
                 margin-right: auto;
                 margin-left: auto;
                 padding-top: 10vh;
