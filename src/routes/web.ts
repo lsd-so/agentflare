@@ -52,6 +52,7 @@ webRoutes.get("/", (c) => {
                 flex-direction: column;
                 padding-top: 8px;
                 padding-bottom: 8px;
+                overflow: auto;
         }
 
         #messages {
@@ -150,7 +151,9 @@ webRoutes.get("/", (c) => {
         
         function addMessage(content, isUser = false) {
             const messageDiv = document.createElement('div');
-            // messageDiv.className = \`nes-balloon \${isUser ? 'from-right' : 'from-left'}\`;
+            if (isUser) {
+                messageDiv.style.marginLeft = 'auto';
+            }
             messageDiv.innerHTML = \`<div class="nes-balloon \${isUser ? 'from-right' : 'from-left'}">\${content.replaceAll('\\n', '<br/>')}</div>\`;
             
             // Remove initial message if it exists
