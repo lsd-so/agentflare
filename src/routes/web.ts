@@ -64,21 +64,20 @@ webRoutes.get("/", (c) => {
         <h1>AgentFlare</h1>
     </div>
     
-    <div class="api-key-container">
-        <div class="api-key-wrapper">
-            <label class="api-key-label" for="apiKey">Anthropic API Key (required for LLM functionality)</label>
+    <div>
+        <div>
+            <label for="apiKey">Anthropic API Key (required for LLM functionality)</label>
             <input 
                 type="password" 
                 id="apiKey" 
-                class="api-key-field" 
                 placeholder="sk-ant-..."
             />
         </div>
     </div>
     
-    <div class="chat-container">
-        <div class="messages" id="messages">
-            <div class="welcome">
+    <div>
+        <div id="messages">
+            <div>
                 <h2>Welcome to AgentFlare</h2>
                 <p>I can help you with web browsing, desktop automation, and search tasks. What would you like me to do?</p>
             </div>
@@ -92,15 +91,14 @@ webRoutes.get("/", (c) => {
             </div>
         </div>
         
-        <div class="input-container">
-            <div class="input-wrapper">
+        <div>
+            <div>
                 <textarea 
                     id="messageInput" 
-                    class="input-field" 
                     placeholder="Message AgentFlare..."
                     rows="1"
                 ></textarea>
-                <button id="sendButton" class="send-button">
+                <button id="sendButton">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                         <path d="M.5 1.163A1 1 0 0 1 1.97.28l12.868 6.837a1 1 0 0 1 0 1.766L1.969 15.72A1 1 0 0 1 .5 14.836V10.33a1 1 0 0 1 .816-.983L8.5 8 1.316 6.653A1 1 0 0 1 .5 5.67V1.163Z" fill="currentColor"/>
                     </svg>
