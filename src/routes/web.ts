@@ -42,7 +42,7 @@ webRoutes.get("/", (c) => {
         }
 
         #api-key-container > label {
-                text-wrap: no-wrap;
+                text-wrap: nowrap;
                 margin-right: 8px;
         }
 
