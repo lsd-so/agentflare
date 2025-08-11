@@ -80,9 +80,15 @@ const initializeBrowser = async () => {
 };
 
 // Ensure browser is ready
-const ensureBrowser = async () => {
+const ensureBrowser = async (retry?: boolean) => {
   if (!browser || !page) {
     await initializeBrowser();
+  }
+
+  if (!page && !retry) {
+    // If page turns out to be null, wait half a second before trying again
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return ensureBrowser(true);
   }
 
   // TODO - something to clear or refresh the page when it's requested rather than recycling the same one over and over
