@@ -117,7 +117,7 @@ webRoutes.get("/", (c) => {
     
     <div id="messages-container">
         <div id="messages">
-            <div>
+            <div id="initial">
                 <h2>Welcome to AgentFlare</h2>
                 <p>I can help you with web browsing, desktop automation, and search tasks. What would you like me to do?</p>
             </div>
@@ -176,10 +176,10 @@ webRoutes.get("/", (c) => {
             messageDiv.className = \`message \${isUser ? 'user' : 'assistant'}\`;
             messageDiv.innerHTML = \`<div class="message-content">\${content}</div>\`;
             
-            // Remove welcome message if it exists
-            const welcome = document.querySelector('.welcome');
-            if (welcome) {
-                welcome.remove();
+            // Remove initial message if it exists
+            const initial = document.querySelector('#initial');
+            if (initial) {
+                initial.remove();
             }
             
             messages.appendChild(messageDiv);
