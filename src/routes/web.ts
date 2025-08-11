@@ -78,6 +78,10 @@ webRoutes.get("/", (c) => {
         #chat-input-container > button {
                 margin-left: 6px;
         }
+
+        #loading {
+                display: none;
+        }
     </style>
 </head>
 <body>
@@ -152,7 +156,8 @@ webRoutes.get("/", (c) => {
         function addMessage(content, isUser = false) {
             const messageDiv = document.createElement('div');
             if (isUser) {
-                messageDiv.style.marginLeft = 'auto';
+                messageDiv.style.display = 'flex';
+                messageDiv.style.justifyContent = 'flex-end';
             }
             messageDiv.innerHTML = \`<div class="nes-balloon \${isUser ? 'from-right' : 'from-left'}">\${content.replaceAll('\\n', '<br/>')}</div>\`;
             
