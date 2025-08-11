@@ -49,6 +49,11 @@ webRoutes.get("/", (c) => {
         #chat-input-container {
                 display: flex;
         }
+
+        #chat-input-container > * {
+                margin-left: 5px;
+                margin-right: 5px;
+        }
         
         .loading {
             display: none;
