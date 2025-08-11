@@ -381,7 +381,8 @@ webRoutes.post("/chat", async (c) => {
       taskType: response.taskType,
       data: response.data,
       error: response.error,
-      executionTime: response.executionTime
+      executionTime: response.executionTime,
+      response,
     });
   } catch (error) {
     return c.json({
