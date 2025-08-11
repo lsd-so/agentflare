@@ -27,11 +27,17 @@ webRoutes.get("/", (c) => {
         body {
                 display: flex;
                 flex-direction: column;
+                height: 100vh;
         }
 
         #banner {
             display: flex;
             justify-content: center;
+        }
+
+        #messages-container {
+                display: flex;
+                flex: 1;
         }
 
         #messages {
@@ -85,7 +91,7 @@ webRoutes.get("/", (c) => {
         </div>
     </div>
     
-    <div>
+    <div id="messages-container">
         <div id="messages">
             <div>
                 <h2>Welcome to AgentFlare</h2>
