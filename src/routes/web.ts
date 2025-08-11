@@ -24,9 +24,18 @@ webRoutes.get("/", (c) => {
             font-family: "Press Start 2P", system-ui;
         }
 
+        body {
+                display: flex;
+                flex-direction: column;
+        }
+
         #banner {
             display: flex;
             justify-content: center;
+        }
+
+        #messages {
+                flex: 1;
         }
         
         .loading {
