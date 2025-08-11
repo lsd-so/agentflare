@@ -38,6 +38,12 @@ webRoutes.get("/", (c) => {
 
         #api-key-container {
                 display: flex;
+                align-items: center;
+        }
+
+        #api-key-container > label {
+                text-wrap: no-wrap;
+                margin-right: 8px;
         }
 
         #messages-container {
