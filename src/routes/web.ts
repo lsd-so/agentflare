@@ -142,7 +142,7 @@ webRoutes.get("/", (c) => {
             <div id="chat-input-container">
                 <textarea 
                     id="messageInput" 
-                    placeholder="Message AgentFlare..."
+                    placeholder="The cloud is your oyster..."
                     class="nes-textarea"
                     rows="1"
                 ></textarea>
