@@ -179,6 +179,9 @@ export class MainAgent {
           console.log(`🔍 TOOL: Search completed. Success: ${searchResult.success}, Results: ${searchResult.results.length}`);
 
           if (searchResult.success) {
+            console.log("Going ahead and logging the first result object");
+            console.log(searchResult.results[0]);
+
             return {
               message: `Found ${searchResult.results.length} search results for "${query}"`,
               success: true,
