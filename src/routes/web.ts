@@ -110,7 +110,7 @@ webRoutes.get("/", (c) => {
     <div id="messages-container">
         <div id="messages">
             <div id="initial">
-                <i class="nes-charmander"></i>
+                <i class="snes-jp-logo"></i>
                 <p>I can help you with web browsing, desktop automation, and search tasks. What would you like me to do?</p>
             </div>
         </div>
