@@ -36,6 +36,10 @@ webRoutes.get("/", (c) => {
             justify-content: center;
         }
 
+        #api-key-container {
+                display: flex;
+        }
+
         #messages-container {
                 display: flex;
                 flex: 1;
@@ -94,11 +98,11 @@ webRoutes.get("/", (c) => {
     </div>
     
     <div>
-        <div>
-            <label for="apiKey">Anthropic API Key (required for LLM functionality)</label>
+        <div id="api-key-container">
+            <label for="api-key">Anthropic API Key (required for LLM functionality)</label>
             <input 
                 type="password" 
-                id="apiKey"
+                id="api-key"
                 class="nes-input"
                 placeholder="sk-ant-..."
             />
@@ -143,7 +147,7 @@ webRoutes.get("/", (c) => {
         const sendButton = document.getElementById('sendButton');
         const messages = document.getElementById('messages');
         const loading = document.getElementById('loading');
-        const apiKeyInput = document.getElementById('apiKey');
+        const apiKeyInput = document.getElementById('api-key');
         
         function autoResize() {
             messageInput.style.height = 'auto';
