@@ -56,6 +56,13 @@ webRoutes.get("/", (c) => {
                 flex: 1;
         }
 
+        #initial {
+                max-width: 480px;
+                margin-right: auto;
+                margin-left: auto;
+                padding-top: 10vh;
+        }
+
         #chat-input-container {
                 display: flex;
         }
