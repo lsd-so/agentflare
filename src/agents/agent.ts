@@ -43,91 +43,97 @@ export class MainAgent {
     console.log(`🔍 DIRECT SEARCH: Starting Brave search for query: "${query}"`);
     console.log(`🔍 DIRECT SEARCH: Search URL: ${searchUrl}`);
 
-    try {
-      console.log(`🔍 DIRECT SEARCH: Making axios request...`);
-      const response = await axios.get(searchUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        },
-        timeout: 5000, // 5 second timeout
-        validateStatus: (status) => status < 500 // Don't throw for 4xx status codes
-      });
+    let lastError: Error | null = null;
 
-      console.log(`🔍 DIRECT SEARCH: HTTP response status: ${response.status}`);
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        console.log(`🔍 DIRECT SEARCH: Making axios request (attempt ${attempt}/3)...`);
+        const response = await axios.get(searchUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+          },
+          timeout: 5000, // 5 second timeout
+          validateStatus: (status) => status < 500 // Don't throw for 4xx status codes
+        });
 
-      if (true) {
-        return {
-          success: true,
-          results: [],
-          error: undefined,
+        console.log(`🔍 DIRECT SEARCH: HTTP response status: ${response.status} (attempt ${attempt})`);
+
+        if (response.status !== 200) {
+          throw new Error(`Brave Search request failed: ${response.status} ${response.statusText}`);
+        }
+
+        const html = response.data;
+        console.log(`🔍 DIRECT SEARCH: Received HTML response (${typeof html === 'string' ? html.length : 'non-string'} characters) on attempt ${attempt}`);
+
+        const $ = cheerio.load(html);
+
+        const results: SearchResult[] = [];
+        const searchResults = $('div#results div[data-type="web"] > a');
+        console.log(`🔍 DIRECT SEARCH: Found ${searchResults.length} search result elements on attempt ${attempt}`);
+
+        // Debug: Try alternative selectors if main one doesn't work
+        if (searchResults.length === 0) {
+          console.log(`🔍 DIRECT SEARCH: No results with main selector on attempt ${attempt}, trying alternatives...`);
+          const altSelectors = [
+            'div#results a[href]',
+            '.result a[href]',
+            '[data-type="web"] a',
+            '.web-result a',
+            'div.result a'
+          ];
+
+          for (const selector of altSelectors) {
+            const altResults = $(selector);
+            console.log(`🔍 DIRECT SEARCH: Selector '${selector}' found ${altResults.length} elements`);
+          }
+        }
+
+        searchResults.slice(0, maxResults).each((index, element) => {
+          const $element = $(element);
+          const url = $element.attr('href');
+          const title = $element.find('h4, .title').text().trim() || $element.text().trim();
+
+          console.log(`🔍 DIRECT SEARCH: Processing result ${index + 1}: "${title}"`);
+
+          // Try to find snippet from nearby elements
+          const snippet = $element.parent().find('.snippet, .description, p').first().text().trim() ||
+            $element.next().text().trim() ||
+            'No description available';
+
+          if (url && title) {
+            results.push({
+              title,
+              url,
+              snippet,
+              position: index + 1
+            });
+            console.log(`🔍 DIRECT SEARCH: ✅ Added result ${index + 1}`);
+          } else {
+            console.log(`🔍 DIRECT SEARCH: ❌ Skipped result ${index + 1} (missing url or title)`);
+          }
+        });
+
+        console.log(`🔍 DIRECT SEARCH: ✅ Success on attempt ${attempt} - Final results count: ${results.length}`);
+        return { success: true, results };
+
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error('Unknown error');
+        console.log(`🔍 DIRECT SEARCH: ❌ Attempt ${attempt} failed:`, lastError.message);
+        
+        if (attempt < 3) {
+          console.log(`🔍 DIRECT SEARCH: Retrying in 1 second... (${3 - attempt} attempts remaining)`);
+          await new Promise(resolve => setTimeout(resolve, 1000));
         }
       }
-
-      if (response.status !== 200) {
-        throw new Error(`Brave Search request failed: ${response.status} ${response.statusText}`);
-      }
-
-      const html = response.data;
-      console.log(`🔍 DIRECT SEARCH: Received HTML response (${typeof html === 'string' ? html.length : 'non-string'} characters)`);
-
-      const $ = cheerio.load(html);
-
-      const results: SearchResult[] = [];
-      const searchResults = $('div#results div[data-type="web"] > a');
-      console.log(`🔍 DIRECT SEARCH: Found ${searchResults.length} search result elements`);
-
-      // Debug: Try alternative selectors if main one doesn't work
-      if (searchResults.length === 0) {
-        console.log('🔍 DIRECT SEARCH: No results with main selector, trying alternatives...');
-        const altSelectors = [
-          'div#results a[href]',
-          '.result a[href]',
-          '[data-type="web"] a',
-          '.web-result a',
-          'div.result a'
-        ];
-
-        for (const selector of altSelectors) {
-          const altResults = $(selector);
-          console.log(`🔍 DIRECT SEARCH: Selector '${selector}' found ${altResults.length} elements`);
-        }
-      }
-
-      searchResults.slice(0, maxResults).each((index, element) => {
-        const $element = $(element);
-        const url = $element.attr('href');
-        const title = $element.find('h4, .title').text().trim() || $element.text().trim();
-
-        console.log(`🔍 DIRECT SEARCH: Processing result ${index + 1}: "${title}"`);
-
-        // Try to find snippet from nearby elements
-        const snippet = $element.parent().find('.snippet, .description, p').first().text().trim() ||
-          $element.next().text().trim() ||
-          'No description available';
-
-        if (url && title) {
-          results.push({
-            title,
-            url,
-            snippet,
-            position: index + 1
-          });
-          console.log(`🔍 DIRECT SEARCH: ✅ Added result ${index + 1}`);
-        } else {
-          console.log(`🔍 DIRECT SEARCH: ❌ Skipped result ${index + 1} (missing url or title)`);
-        }
-      });
-
-      console.log(`🔍 DIRECT SEARCH: Final results count: ${results.length}`);
-      return { success: true, results };
-    } catch (error) {
-      console.log(`🔍 DIRECT SEARCH: ❌ Error:`, error);
-      return {
-        success: false,
-        results: [],
-        error: error instanceof Error ? error.message : 'Unknown error'
-      };
     }
+
+    // All attempts failed
+    console.log(`🔍 DIRECT SEARCH: ❌ All 3 attempts failed. Final error:`, lastError?.message);
+    return {
+      success: false,
+      results: [],
+      error: lastError?.message || 'All retry attempts failed'
+    };
   }
 
   private getTools() {
