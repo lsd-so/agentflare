@@ -223,7 +223,7 @@ webRoutes.get("/", (c) => {
 </head>
 <body>
     <div class="header">
-        <h1>AgentFlare</h1>
+        <h1>Agentflare</h1>
     </div>
     
     <div class="api-key-container">
