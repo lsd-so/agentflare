@@ -346,6 +346,39 @@ app.get('/title', async (req, res) => {
   }
 });
 
+// HTML endpoint for getting full page HTML
+app.get('/html', async (req, res) => {
+  console.log("Received a request for HTML!");
+  try {
+    const { url } = req.query;
+    if (!url) {
+      return res.status(400).json({ success: false, error: 'URL parameter required' });
+    }
+
+    console.log(`Going to fetch HTML for URL: ${url}`);
+
+    const page = await ensureBrowser();
+
+    console.log("Navigating to page...");
+
+    await page.goto(url, { timeout: 30000 });
+
+    console.log("Getting page HTML content...");
+
+    const html = await page.content();
+
+    res.json({
+      success: true,
+      html: html,
+      url: url,
+      message: `Retrieved HTML content (${html.length} characters)`
+    });
+  } catch (error) {
+    console.error('HTML retrieval error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Agent endpoint for LLM-powered interactions
 app.post('/agent', async (req, res) => {
   try {

@@ -5,7 +5,7 @@ import { generateText, tool } from 'ai';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { z } from 'zod';
 import * as cheerio from 'cheerio';
-import axios from 'axios';
+import { getContainer } from "@cloudflare/containers";
 
 export interface AgentTask {
   type: 'browser' | 'computer' | 'search' | 'auto';
@@ -47,23 +47,27 @@ export class MainAgent {
 
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
-        console.log(`🔍 DIRECT SEARCH: Making axios request (attempt ${attempt}/3)...`);
-        const response = await axios.get(searchUrl, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-          },
-          timeout: 3500, // 3.5 second timeout
-          validateStatus: (status) => status < 500 // Don't throw for 4xx status codes
-        });
+        console.log(`🔍 DIRECT SEARCH: Making browser container request (attempt ${attempt}/3)...`);
 
-        console.log(`🔍 DIRECT SEARCH: HTTP response status: ${response.status} (attempt ${attempt})`);
+        const container = getContainer(this.env.BROWSER_CONTAINER);
+        const request = new Request(`http://localhost:3000/html?url=${encodeURIComponent(searchUrl)}`);
+        const response = await container.fetch(request);
 
-        if (response.status !== 200) {
-          throw new Error(`Brave Search request failed: ${response.status} ${response.statusText}`);
+        console.log(`🔍 DIRECT SEARCH: Browser container response status: ${response.status} (attempt ${attempt})`);
+
+        if (!response.ok) {
+          throw new Error(`Browser container request failed: ${response.status} ${response.statusText}`);
         }
 
-        const html = response.data;
-        console.log(`🔍 DIRECT SEARCH: Received HTML response (${typeof html === 'string' ? html.length : 'non-string'} characters) on attempt ${attempt}`);
+        const result = await response.json() as Record<string, any>;
+        console.log(`🔍 DIRECT SEARCH: Browser container result:`, result.success ? `Success - ${result.message}` : `Failed - ${result.error}`);
+
+        if (!result.success) {
+          throw new Error(`Browser failed to fetch HTML: ${result.error}`);
+        }
+
+        const html = result.html;
+        console.log(`🔍 DIRECT SEARCH: Received HTML via browser container (${html?.length || 0} characters) on attempt ${attempt}`);
 
         const $ = cheerio.load(html);
 
