@@ -23,6 +23,11 @@ webRoutes.get("/", (c) => {
         html, body, pre, code, kbd, samp {
             font-family: "Press Start 2P", system-ui;
         }
+
+        #banner {
+            display: flex;
+            justify-content: center;
+        }
         
         .loading {
             display: none;
@@ -55,7 +60,7 @@ webRoutes.get("/", (c) => {
     </style>
 </head>
 <body>
-    <div class="header">
+    <div id="banner">
         <h1>AgentFlare</h1>
     </div>
     
