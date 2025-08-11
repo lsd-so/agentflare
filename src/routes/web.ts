@@ -77,35 +77,6 @@ webRoutes.get("/", (c) => {
         #chat-input-container > button {
                 margin-left: 6px;
         }
-        
-        .loading {
-            display: none;
-            padding: 1rem;
-            background: #212529;
-            margin-right: 3rem;
-            border-radius: 8px;
-        }
-        
-        .loading-dots {
-            display: flex;
-            gap: 4px;
-        }
-        
-        .loading-dot {
-            width: 8px;
-            height: 8px;
-            background: #8e8ea0;
-            border-radius: 50%;
-            animation: loading 1.4s infinite ease-in-out;
-        }
-        
-        .loading-dot:nth-child(1) { animation-delay: -0.32s; }
-        .loading-dot:nth-child(2) { animation-delay: -0.16s; }
-        
-        @keyframes loading {
-            0%, 80%, 100% { opacity: 0.3; }
-            40% { opacity: 1; }
-        }
     </style>
 </head>
 <body>
@@ -128,17 +99,13 @@ webRoutes.get("/", (c) => {
     <div id="messages-container">
         <div id="messages">
             <div id="initial">
-                <i class="nes-octocat animate"></i>
+                <i class="nes-charmander"></i>
                 <p>I can help you with web browsing, desktop automation, and search tasks. What would you like me to do?</p>
             </div>
         </div>
         
-        <div class="loading" id="loading">
-            <div class="loading-dots">
-                <div class="loading-dot"></div>
-                <div class="loading-dot"></div>
-                <div class="loading-dot"></div>
-            </div>
+        <div id="loading">
+            <i class="nes-octocat animate"></i>
         </div>
         
         <div>
