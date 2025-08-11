@@ -43,99 +43,118 @@ export class MainAgent {
     console.log(`🔍 DIRECT SEARCH: Starting Brave search for query: "${query}"`);
     console.log(`🔍 DIRECT SEARCH: Search URL: ${searchUrl}`);
 
+    // Use the fetchHTML function to get the search results page
+    const htmlResult = await this.fetchHTML(searchUrl);
+
+    if (!htmlResult.success) {
+      console.log(`🔍 DIRECT SEARCH: ❌ Failed to fetch HTML: ${htmlResult.error}`);
+      return {
+        success: false,
+        results: [],
+        error: htmlResult.error
+      };
+    }
+
+    const html = htmlResult.html!;
+    console.log(`🔍 DIRECT SEARCH: Processing HTML content (${html.length} characters)`);
+
+    const $ = cheerio.load(html);
+
+    const results: SearchResult[] = [];
+    const searchResults = $('div#results div[data-type="web"] > a');
+    console.log(`🔍 DIRECT SEARCH: Found ${searchResults.length} search result elements`);
+
+    // Debug: Try alternative selectors if main one doesn't work
+    if (searchResults.length === 0) {
+      console.log(`🔍 DIRECT SEARCH: No results with main selector, trying alternatives...`);
+      const altSelectors = [
+        'div#results a[href]',
+        '.result a[href]',
+        '[data-type="web"] a',
+        '.web-result a',
+        'div.result a'
+      ];
+
+      for (const selector of altSelectors) {
+        const altResults = $(selector);
+        console.log(`🔍 DIRECT SEARCH: Selector '${selector}' found ${altResults.length} elements`);
+      }
+    }
+
+    searchResults.slice(0, maxResults).each((index, element) => {
+      const $element = $(element);
+      const url = $element.attr('href');
+      const title = $element.find('h4, .title').text().trim() || $element.text().trim();
+
+      console.log(`🔍 DIRECT SEARCH: Processing result ${index + 1}: "${title}"`);
+
+      // Try to find snippet from nearby elements
+      const snippet = $element.parent().find('.snippet, .description, p').first().text().trim() ||
+        $element.next().text().trim() ||
+        'No description available';
+
+      if (url && title) {
+        results.push({
+          title,
+          url,
+          snippet,
+          position: index + 1
+        });
+        console.log(`🔍 DIRECT SEARCH: ✅ Added result ${index + 1}`);
+      } else {
+        console.log(`🔍 DIRECT SEARCH: ❌ Skipped result ${index + 1} (missing url or title)`);
+      }
+    });
+
+    console.log(`🔍 DIRECT SEARCH: ✅ Final results count: ${results.length}`);
+    return { success: true, results };
+  }
+
+  private async fetchHTML(url: string): Promise<{ success: boolean; html?: string; error?: string }> {
+    console.log(`🌐 FETCH HTML: Starting HTML fetch for URL: "${url}"`);
+
     let lastError: Error | null = null;
 
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
-        console.log(`🔍 DIRECT SEARCH: Making browser container request (attempt ${attempt}/3)...`);
+        console.log(`🌐 FETCH HTML: Making browser container request (attempt ${attempt}/3)...`);
 
         const container = getContainer(this.env.BROWSER_CONTAINER);
-        const request = new Request(`http://localhost:3000/html?url=${encodeURIComponent(searchUrl)}`);
+        const request = new Request(`http://localhost:3000/html?url=${encodeURIComponent(url)}`);
         const response = await container.fetch(request);
 
-        console.log(`🔍 DIRECT SEARCH: Browser container response status: ${response.status} (attempt ${attempt})`);
+        console.log(`🌐 FETCH HTML: Browser container response status: ${response.status} (attempt ${attempt})`);
 
         if (!response.ok) {
           throw new Error(`Browser container request failed: ${response.status} ${response.statusText}`);
         }
 
         const result = await response.json() as Record<string, any>;
-        console.log(`🔍 DIRECT SEARCH: Browser container result:`, result.success ? `Success - ${result.message}` : `Failed - ${result.error}`);
+        console.log(`🌐 FETCH HTML: Browser container result:`, result.success ? `Success - ${result.message}` : `Failed - ${result.error}`);
 
         if (!result.success) {
           throw new Error(`Browser failed to fetch HTML: ${result.error}`);
         }
 
         const html = result.html;
-        console.log(`🔍 DIRECT SEARCH: Received HTML via browser container (${html?.length || 0} characters) on attempt ${attempt}`);
-
-        const $ = cheerio.load(html);
-
-        const results: SearchResult[] = [];
-        const searchResults = $('div#results div[data-type="web"] > a');
-        console.log(`🔍 DIRECT SEARCH: Found ${searchResults.length} search result elements on attempt ${attempt}`);
-
-        // Debug: Try alternative selectors if main one doesn't work
-        if (searchResults.length === 0) {
-          console.log(`🔍 DIRECT SEARCH: No results with main selector on attempt ${attempt}, trying alternatives...`);
-          const altSelectors = [
-            'div#results a[href]',
-            '.result a[href]',
-            '[data-type="web"] a',
-            '.web-result a',
-            'div.result a'
-          ];
-
-          for (const selector of altSelectors) {
-            const altResults = $(selector);
-            console.log(`🔍 DIRECT SEARCH: Selector '${selector}' found ${altResults.length} elements`);
-          }
-        }
-
-        searchResults.slice(0, maxResults).each((index, element) => {
-          const $element = $(element);
-          const url = $element.attr('href');
-          const title = $element.find('h4, .title').text().trim() || $element.text().trim();
-
-          console.log(`🔍 DIRECT SEARCH: Processing result ${index + 1}: "${title}"`);
-
-          // Try to find snippet from nearby elements
-          const snippet = $element.parent().find('.snippet, .description, p').first().text().trim() ||
-            $element.next().text().trim() ||
-            'No description available';
-
-          if (url && title) {
-            results.push({
-              title,
-              url,
-              snippet,
-              position: index + 1
-            });
-            console.log(`🔍 DIRECT SEARCH: ✅ Added result ${index + 1}`);
-          } else {
-            console.log(`🔍 DIRECT SEARCH: ❌ Skipped result ${index + 1} (missing url or title)`);
-          }
-        });
-
-        console.log(`🔍 DIRECT SEARCH: ✅ Success on attempt ${attempt} - Final results count: ${results.length}`);
-        return { success: true, results };
+        console.log(`🌐 FETCH HTML: ✅ Success on attempt ${attempt} - HTML length: ${html?.length || 0} characters`);
+        return { success: true, html };
 
       } catch (error) {
         lastError = error instanceof Error ? error : new Error('Unknown error');
-        console.log(`🔍 DIRECT SEARCH: ❌ Attempt ${attempt} failed:`, lastError.message);
+        console.log(`🌐 FETCH HTML: ❌ Attempt ${attempt} failed:`, lastError.message);
 
         if (attempt < 3) {
-          console.log(`🔍 DIRECT SEARCH: Retrying in 1 second... (${3 - attempt} attempts remaining)`);
+          console.log(`🌐 FETCH HTML: Retrying in 1 second... (${3 - attempt} attempts remaining)`);
           await new Promise(resolve => setTimeout(resolve, 1000));
         }
       }
     }
 
     // All attempts failed
-    console.log(`🔍 DIRECT SEARCH: ❌ All 3 attempts failed. Final error:`, lastError?.message);
+    console.log(`🌐 FETCH HTML: ❌ All 3 attempts failed. Final error:`, lastError?.message);
     return {
       success: false,
-      results: [],
       error: lastError?.message || 'All retry attempts failed'
     };
   }
@@ -189,6 +208,32 @@ export class MainAgent {
               message: `Search failed for query: "${query}"`,
               success: false,
               error: searchResult.error
+            };
+          }
+        }
+      }),
+      getHTML: tool({
+        description: 'Get the HTML content of any web page by providing a URL. Uses browser container to fetch the page.',
+        parameters: z.object({
+          url: z.string().describe('The URL to fetch HTML content from')
+        }),
+        execute: async ({ url }) => {
+          console.log(`🌐 HTML TOOL: Fetching HTML content for URL: ${url}`);
+          const htmlResult = await this.fetchHTML(url);
+          console.log(`🌐 HTML TOOL: Fetch completed. Success: ${htmlResult.success}, HTML length: ${htmlResult.html?.length || 0}`);
+
+          if (htmlResult.success) {
+            return {
+              message: `Successfully retrieved HTML content from ${url} (${htmlResult.html?.length || 0} characters)`,
+              success: true,
+              html: htmlResult.html,
+              url: url
+            };
+          } else {
+            return {
+              message: `Failed to retrieve HTML content from ${url}`,
+              success: false,
+              error: htmlResult.error
             };
           }
         }
@@ -344,11 +389,12 @@ export class MainAgent {
         messages: [
           {
             role: 'system',
-            content: `You are AgentFlare, an AI assistant that can help with web browsing, desktop automation, and search tasks. You have access to three specialized tools:
+            content: `You are AgentFlare, an AI assistant that can help with web browsing, desktop automation, and search tasks. You have access to four specialized tools:
 
 1. Browser Agent (call_browser_agent): For web automation tasks like navigating websites, clicking buttons, filling forms, taking screenshots
 2. Computer Agent (call_computer_agent): For desktop automation via VNC, clicking anywhere on screen, typing, keyboard shortcuts  
 3. Web Search (search_web): For searching the web and getting information from Brave Search
+4. Get HTML (getHTML): For fetching the raw HTML content of any web page by URL
 
 Use these tools when the user's request requires their capabilities. You can use multiple tools in sequence if needed. Always explain what you're doing and provide helpful responses based on the tool results.`
           },
