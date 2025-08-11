@@ -97,7 +97,7 @@ export class MainAgent {
           const url = $element.attr('href');
           const title = $element.find('h4, .title').text().trim() || $element.text().trim();
 
-          console.log(`🔍 DIRECT SEARCH: Processing result ${index + 1}: "${title}"`);
+          console.log(`🔍 DIRECT SEARCH: Processing result ${index + 1}: "${title}" <${url}>`);
 
           // Try to find snippet from nearby elements
           const snippet = $element.parent().find('.snippet, .description, p').first().text().trim() ||
