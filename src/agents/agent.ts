@@ -97,7 +97,7 @@ export class MainAgent {
           const url = $element.attr('href');
           const title = $element.find('h4, .title').text().trim() || $element.text().trim();
 
-          console.log(`🔍 DIRECT SEARCH: Processing result ${index + 1}: "${title}" <${url}>`);
+          console.log(`🔍 DIRECT SEARCH: Processing result ${index + 1}: "${title}"`);
 
           // Try to find snippet from nearby elements
           const snippet = $element.parent().find('.snippet, .description, p').first().text().trim() ||
@@ -179,9 +179,6 @@ export class MainAgent {
           console.log(`🔍 TOOL: Search completed. Success: ${searchResult.success}, Results: ${searchResult.results.length}`);
 
           if (searchResult.success) {
-            console.log("Going ahead and logging the first result object");
-            console.log(JSON.stringify(searchResult.results[0]));
-
             return {
               message: `Found ${searchResult.results.length} search results for "${query}"`,
               success: true,
