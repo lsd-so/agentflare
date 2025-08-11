@@ -38,6 +38,7 @@ webRoutes.get("/", (c) => {
         #messages-container {
                 display: flex;
                 flex: 1;
+                flex-direction: column;
         }
 
         #messages {
