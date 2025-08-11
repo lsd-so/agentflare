@@ -14,7 +14,16 @@ webRoutes.get("/", (c) => {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AgentFlare</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet">
+    <link href="https://unpkg.com/nes.css/css/nes.css" rel="stylesheet" />
+
     <style>
+        html, body, pre, code, kbd, samp {
+            font-family: "Press Start 2P", system-ui;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -22,7 +31,6 @@ webRoutes.get("/", (c) => {
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
             background-color: #212121;
             color: #ececec;
             height: 100vh;
