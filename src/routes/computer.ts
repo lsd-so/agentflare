@@ -4,6 +4,12 @@ import { AppBindings } from "../types";
 
 const computerRoutes = new Hono<{ Bindings: AppBindings }>();
 
+// Screenshot endpoint - forwards to computer container
+computerRoutes.get("/screenshot", async (c) => {
+  const container = getContainer(c.env.COMPUTER_CONTAINER);
+  return await container.fetch(switchPort(c.req.raw, 3000));
+});
+
 // VNC web interface endpoint
 computerRoutes.get("/vnc", async (c) => {
   const container = getContainer(c.env.COMPUTER_CONTAINER);
