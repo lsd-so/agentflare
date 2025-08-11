@@ -195,6 +195,8 @@ webRoutes.get("/", (c) => {
             addMessage(message, true);
             messageInput.value = '';
             messageInput.style.height = 'auto';
+            messageInput.disabled = true;
+            messageInput.classList.add('is-warning');
             sendButton.disabled = true;
             loading.style.display = 'block';
             
@@ -219,6 +221,8 @@ webRoutes.get("/", (c) => {
             } finally {
                 loading.style.display = 'none';
                 sendButton.disabled = false;
+                messageInput.disabled = false;
+                messageInput.classList.remove('is-warning');
                 messageInput.focus();
             }
         }
