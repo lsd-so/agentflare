@@ -30,7 +30,7 @@ This was inspired by the recent [OpenAI Agent](https://openai.com/index/introduc
 
 ## Usage
 
-**Note:** Some of the below recordings have time cut out for viewability, the end-to-end one shotting is still true and various caching approaches can be applied to make live usage more alike the GIFs shown below.
+**Note:** Some of the below recordings have sections where it's loading cut out for viewability, the end-to-end one shotting is still true and various caching or optimizations can be applied to make live usage more alike the GIFs shown below.
 
 ### Search example
 
