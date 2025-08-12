@@ -22,8 +22,9 @@ sendButton.addEventListener('click', sendMessage);
 
 function addMessage(content, isUser = false) {
   const messageDiv = document.createElement('div');
+  messageDiv.style.display = 'flex';
+  messageDiv.style.alignItems = 'flex-start';
   if (isUser) {
-    messageDiv.style.display = 'flex';
     messageDiv.style.justifyContent = 'flex-end';
   }
   const contentDiv = document.createElement('div');
