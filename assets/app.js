@@ -43,15 +43,19 @@ function addMessage(content, isUser = false) {
     }
   });
 
+  const authorContainer = document.createElement('div');
+  authorContainer.style.width = '96px';
+  authorContainer.style.height = '96px';
   const authorEl = document.createElement('i');
   authorEl.classList.add('nes-bcrikko');
+  authorContainer.appendChild(authorEl);
 
   if (!isUser) {
-    messageDiv.appendChild(authorEl);
+    messageDiv.appendChild(authorContainer);
     messageDiv.appendChild(contentDiv);
   } else {
     messageDiv.appendChild(contentDiv);
-    messageDiv.appendChild(authorEl);
+    messageDiv.appendChild(authorContainer);
   }
   
   // Remove initial message if it exists
