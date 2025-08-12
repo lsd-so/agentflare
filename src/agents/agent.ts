@@ -384,24 +384,19 @@ export class MainAgent {
 
       console.log("Generating text");
       const result = await generateText({
-        model: anthropic('claude-3-5-sonnet-20241022'),
-        messages: [
-          {
-            role: 'system',
-            content: `You are AgentFlare, an AI assistant that can help with web browsing, desktop automation, and search tasks. You have access to four specialized tools:
+        model: anthropic('claude-sonnet-4-20250514'),
+        system: `You are AgentFlare, an AI assistant that can help with web browsing, desktop automation, and search tasks. You have access to four specialized tools:
 
 1. Browser Agent (call_browser_agent): For web automation tasks like navigating websites, clicking buttons, filling forms, taking screenshots
 2. Computer Agent (call_computer_agent): For desktop automation via VNC, clicking anywhere on screen, typing, keyboard shortcuts  
 3. Web Search (search_web): For searching the web and getting information from Brave Search
 4. Get HTML (getHTML): For fetching the raw HTML content of any web page by URL
 
-Use these tools when the user's request requires their capabilities. You can use multiple tools in sequence if needed. Always explain what you're doing and provide helpful responses based on the tool results.`
-          },
-          {
-            role: 'user',
-            content: request
-          }
-        ],
+Use these tools when the user's request requires their capabilities. You can use multiple tools in sequence if needed. Always explain what you're doing and provide helpful responses based on the tool results.`,
+        prompt: request,
+        headers: {
+          'anthropic-beta': 'context-1m-2025-08-07',
+        },
         tools,
         maxSteps: 10,
         toolChoice: 'auto'

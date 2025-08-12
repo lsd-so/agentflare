@@ -17,13 +17,13 @@ export class ComputerAgent {
 
     try {
       const container = getContainer(this.env.COMPUTER_CONTAINER);
-      const request = new Request(`http://localhost:3000/agent`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: prompt,
-          apiKey: this.apiKey
-        })
+      const request = new Request(`http://localhost:3000/agent?apiKey=${encodeURIComponent(this.apiKey)}&prompt=${encodeURIComponent(prompt)}`, {
+        method: 'GET',
+        // headers: { 'Content-Type': 'application/json' },
+        // body: JSON.stringify({
+        //   prompt: prompt,
+        //   apiKey: this.apiKey
+        // })
       });
       const response = await container.fetch(request);
 

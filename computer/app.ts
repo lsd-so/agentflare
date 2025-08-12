@@ -24,8 +24,7 @@ const instantiateConnection = () => {
     client.on('frameUpdated', async (data) => {
       counter += 1;
       const image = new Jimp({ width: client.clientWidth, height: client.clientHeight, data: client.getFb() })
-      const fileName = `${Date.now()}`;
-      console.log(`Saving frame to file. ${fileName}.jpg`);
+      // image.resize({ w: client.clientWidth * 0.5, h: client.clientHeight * 0.5 });
       lastScreenshot = await image.getBase64("image/jpeg");
       counter += 1;
     });
@@ -355,10 +354,9 @@ app.get("/enter", (req, res) => {
   }
 });
 
-// Agent endpoint for LLM-powered computer interactions
-app.post('/agent', async (req, res) => {
+app.get('/agent', async (req, res) => {
   try {
-    const { prompt, apiKey } = req.body;
+    const { prompt, apiKey } = req.query;
     if (!prompt) {
       return res.status(400).json({ success: false, error: 'Prompt required' });
     }
@@ -366,13 +364,9 @@ app.post('/agent', async (req, res) => {
       return res.status(400).json({ success: false, error: 'API key required' });
     }
 
+    console.log("starting connection");
     // Ensure VNC connection is ready
     instantiateConnection();
-
-    // Take initial screenshot
-    while (!lastScreenshot) {
-      await new Promise(resolve => setTimeout(resolve, 250));
-    }
 
     // Getting computer tools
     const tools = getComputerTools();
@@ -384,11 +378,8 @@ app.post('/agent', async (req, res) => {
 
     // Generate response using LLM
     const result = await generateText({
-      model: anthropic('claude-3-5-sonnet-20241022'),
-      messages: [
-        {
-          role: 'system',
-          content: `You are a computer control agent that can interact with desktop environments via VNC. You can:
+      model: anthropic('claude-sonnet-4-20250514'),
+      system: `You are a computer control agent that can interact with desktop environments via VNC. You can:
 
 - screenshot: Take screenshots to see the desktop
 - click: Click at specific coordinates
@@ -397,16 +388,14 @@ app.post('/agent', async (req, res) => {
 - scroll: Scroll in any direction
 - move: Move mouse cursor
 
-Always take a screenshot first to see the current desktop state, then proceed with actions. Be precise with coordinates and explain what you're doing. When clicking, aim for the center of buttons or UI elements.`
-        },
-        {
-          role: 'user',
-          content: `${prompt}${lastScreenshot ? '\n\nCurrent desktop screenshot is attached.' : ''}`
-        }
-      ],
+Always take a screenshot first to see the current desktop state, then proceed with actions. Be precise with coordinates and explain what you're doing. When clicking, aim for the center of buttons or UI elements.`,
+      prompt,
       tools,
       stopWhen: stepCountIs(5),
       toolChoice: 'auto',
+      headers: {
+        'anthropic-beta': 'context-1m-2025-08-07',
+      },
       prepareStep: async ({ messages }) => {
         // Find all messages containing screenshots
         const screenshotIndices = [];
@@ -441,18 +430,120 @@ Always take a screenshot first to see the current desktop state, then proceed wi
           };
         }
 
+        console.log(`Making no changes to ${messages.length} messages`);
+        // console.log(JSON.stringify(messages));
+        console.log(`with a screenshot that is ${lastScreenshot.length} long`);
         // No changes needed
         return { messages };
       }
     });
 
-    res.json({
+    console.log("wow");
+    console.log({
+      success: true,
+      message: result.text,
+      toolCalls: result.toolCalls,
+      toolResults: result.toolResults
+    })
+    return res.json({
       success: true,
       message: result.text,
       toolCalls: result.toolCalls,
       toolResults: result.toolResults
     });
+  } catch (error) {
+    console.error('Computer agent error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+})
 
+// Agent endpoint for LLM-powered computer interactions
+app.post('/agent', async (req, res) => {
+  try {
+    const { prompt, apiKey } = req.body;
+    if (!prompt) {
+      return res.status(400).json({ success: false, error: 'Prompt required' });
+    }
+    if (!apiKey) {
+      return res.status(400).json({ success: false, error: 'API key required' });
+    }
+
+    console.log("starting connection");
+    // Ensure VNC connection is ready
+    instantiateConnection();
+
+    // Getting computer tools
+    const tools = getComputerTools();
+
+    // Create Anthropic client
+    const anthropic = createAnthropic({
+      apiKey: apiKey
+    });
+
+    // Generate response using LLM
+    const result = await generateText({
+      model: anthropic('claude-sonnet-4-20250514'),
+      system: `You are a computer control agent that can interact with desktop environments via VNC. You can:
+
+- screenshot: Take screenshots to see the desktop
+- click: Click at specific coordinates
+- type: Type text via keyboard
+- key: Press specific keys or key combinations
+- scroll: Scroll in any direction
+- move: Move mouse cursor
+
+Always take a screenshot first to see the current desktop state, then proceed with actions. Be precise with coordinates and explain what you're doing. When clicking, aim for the center of buttons or UI elements.`,
+      prompt,
+      tools,
+      stopWhen: stepCountIs(5),
+      toolChoice: 'auto',
+      headers: {
+        'anthropic-beta': 'context-1m-2025-08-07',
+      },
+      prepareStep: async ({ messages }) => {
+        // Find all messages containing screenshots
+        const screenshotIndices = [];
+
+        for (let i = 0; i < messages.length; i++) {
+          const message = messages[i];
+
+          // Check for screenshots in assistant messages
+          if (message.role === 'assistant' && message.content) {
+            const content = Array.isArray(message.content) ? message.content : [message.content];
+            const hasScreenshot = content.some(part =>
+              typeof part === 'object' && part.type === 'image'
+            );
+            if (hasScreenshot) {
+              screenshotIndices.push(i);
+            }
+          }
+        }
+
+        // If we have multiple screenshots, keep only the latest one
+        if (screenshotIndices.length > 1) {
+          const latestScreenshotIndex = screenshotIndices[screenshotIndices.length - 1];
+          const filteredMessages = messages.filter((message, index) => {
+            // Keep all non-screenshot messages and only the latest screenshot
+            return !screenshotIndices.includes(index) || index === latestScreenshotIndex;
+          });
+
+          console.log(`🖥️ COMPUTER AGENT: Filtered ${screenshotIndices.length - 1} old screenshots, keeping latest`);
+
+          return {
+            messages: filteredMessages
+          };
+        }
+
+        return { messages };
+      }
+    });
+
+    return res.json({
+      success: true,
+      message: result.text,
+      toolCalls: result.toolCalls,
+      toolResults: result.toolResults
+    });
   } catch (error) {
     console.error('Computer agent error:', error);
     res.status(500).json({ success: false, error: error.message });

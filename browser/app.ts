@@ -413,7 +413,7 @@ app.post('/agent', async (req, res) => {
 
     // Generate response using LLM
     const result = await generateText({
-      model: anthropic('claude-3-7-sonnet-20250219'),
+      model: anthropic('claude-sonnet-4-20250514'),
       system: `You are a browser agent running inside a Chromium container. You can navigate websites, interact with elements, take screenshots, execute JavaScript, and extract content.
 
 Available tools:
@@ -431,6 +431,9 @@ Answer the user prompt directly with text rather than just describe what's on th
       tools,
       stopWhen: stepCountIs(5),
       toolChoice: 'auto',
+      headers: {
+        'anthropic-beta': 'context-1m-2025-08-07',
+      },
       prepareStep: async ({ messages }) => {
         // Find all messages containing screenshots, HTML, or markdown content
         const screenshotIndices = [];
