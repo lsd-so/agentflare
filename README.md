@@ -30,13 +30,15 @@ This was inspired by the recent [OpenAI Agent](https://openai.com/index/introduc
 
 ## Usage
 
+**Note:** Some of the below recordings have time cut out for viewability, the end-to-end one shotting is still true and various caching approaches can be applied to make live usage more alike the GIFs shown below.
+
 ### Search example
 
 ![Using search to look up news related to Cloudflare and bots](assets/search_usage.gif)
 
 ### Browser example
 
-Here is an example of using a browser to get page content then summarizing
+![Using a browser to get content related to Cloudflare and bots](assets/browser_usage.gif)
 
 ### Computer example
 
