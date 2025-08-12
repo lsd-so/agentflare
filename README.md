@@ -64,62 +64,38 @@ Breakdown of how computer use is architected. Shout out to openai computer using
 
 This utilizes some of the same dependencies as [Anthropic's computer use](https://github.com/anthropics/anthropic-quickstarts/tree/main/computer-use-demo)
 
-# Containers Starter
+## Developing
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/templates/tree/main/containers-template)
+### Running on your own Cloudflare account
 
-![Containers Template Preview](https://imagedelivery.net/_yJ02hpOMj_EnGvsU2aygw/5aba1fb7-b937-46fd-fa67-138221082200/public)
-
-<!-- dash-content-start -->
-
-This is a [Container](https://developers.cloudflare.com/containers/) starter template.
-
-It demonstrates basic Container coniguration, launching and routing to individual container, load balancing over multiple container, running basic hooks on container status changes.
-
-<!-- dash-content-end -->
-
-Outside of this repo, you can start a new project with this template using [C3](https://developers.cloudflare.com/pages/get-started/c3/) (the `create-cloudflare` CLI):
+First, install dependencies.
 
 ```bash
-npm create cloudflare@latest -- --template=cloudflare/templates/containers-template
+$ yarn install
 ```
 
-## Getting Started
-
-First, run:
+Log in to your account if this is your first time interacting with the [wrangler CLI](https://developers.cloudflare.com/workers/wrangler/).
 
 ```bash
-npm install
-# or
-yarn install
-# or
-pnpm install
-# or
-bun install
+$ yarn wrangler login
 ```
 
-Then run the development server (using the package manager of your choice):
+Then, simply deploy.
 
 ```bash
-npm run dev
+$ yarn wrangler deploy
 ```
 
-Open [http://localhost:8787](http://localhost:8787) with your browser to see the result.
+At the end of the output, you should see the URL you can open in your browser to view the application.
 
-You can start editing your Worker by modifying `src/index.ts` and you can start
-editing your Container by editing the content of `container_src`.
+```
+...
+Deployed agentflare triggers (0.34 sec)
+    https://agentflare.account_id.workers.dev      <---- This
+  Current Version ID: some-pretty-cool-uuid
+  Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
+  Done in 225.40s.
+🏁 Wrangler Action completed
+```
 
-## Deploying To Production
-
-| Command          | Action                                |
-| :--------------- | :------------------------------------ |
-| `npm run deploy` | Deploy your application to Cloudflare |
-
-## Learn More
-
-To learn more about Containers, take a look at the following resources:
-
-- [Container Documentation](https://developers.cloudflare.com/containers/) - learn about Containers
-- [Container Class](https://github.com/cloudflare/containers) - learn about the Container helper class
-
-Your feedback and contributions are welcome!
+### Running locally with miniflare
