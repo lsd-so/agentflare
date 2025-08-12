@@ -1,7 +1,7 @@
 const express = require('express')
 const VncClient = require('vnc-rfb-client');
 import { Jimp } from 'jimp';
-const { generateText, tool } = require('ai');
+const { generateText, tool, stepCountIs } = require('ai');
 const { createAnthropic } = require('@ai-sdk/anthropic');
 const { z } = require('zod');
 
@@ -405,8 +405,45 @@ Always take a screenshot first to see the current desktop state, then proceed wi
         }
       ],
       tools,
-      maxSteps: 10,
-      toolChoice: 'auto'
+      stopWhen: stepCountIs(5),
+      toolChoice: 'auto',
+      prepareStep: async ({ messages }) => {
+        // Find all messages containing screenshots
+        const screenshotIndices = [];
+
+        for (let i = 0; i < messages.length; i++) {
+          const message = messages[i];
+
+          // Check for screenshots in assistant messages
+          if (message.role === 'assistant' && message.content) {
+            const content = Array.isArray(message.content) ? message.content : [message.content];
+            const hasScreenshot = content.some(part =>
+              typeof part === 'object' && part.type === 'image'
+            );
+            if (hasScreenshot) {
+              screenshotIndices.push(i);
+            }
+          }
+        }
+
+        // If we have multiple screenshots, keep only the latest one
+        if (screenshotIndices.length > 1) {
+          const latestScreenshotIndex = screenshotIndices[screenshotIndices.length - 1];
+          const filteredMessages = messages.filter((message, index) => {
+            // Keep all non-screenshot messages and only the latest screenshot
+            return !screenshotIndices.includes(index) || index === latestScreenshotIndex;
+          });
+
+          console.log(`🖥️ COMPUTER AGENT: Filtered ${screenshotIndices.length - 1} old screenshots, keeping latest`);
+
+          return {
+            messages: filteredMessages
+          };
+        }
+
+        // No changes needed
+        return { messages };
+      }
     });
 
     res.json({
