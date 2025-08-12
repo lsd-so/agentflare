@@ -28,13 +28,13 @@ body {
     display: flex;
     flex: 1;
     flex-direction: column;
-    padding-top: 8px;
-    padding-bottom: 8px;
     overflow: auto;
 }
 
 #messages {
     flex: 1;
+    padding-top: 8px;
+    padding-bottom: 8px;
     overflow-y: scroll;
 }
 
