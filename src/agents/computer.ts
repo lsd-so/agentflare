@@ -31,15 +31,17 @@ export class ComputerAgent {
 
       if (result.success) {
         return {
+          result,
           success: true,
           message: result.message
-        };
+        } as any;
       } else {
         return {
+          result,
           success: false,
           message: 'Failed to process computer task',
           error: result.error
-        };
+        } as any;
       }
     } catch (error) {
       return {

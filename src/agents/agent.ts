@@ -182,7 +182,7 @@ export class MainAgent {
           console.log("Going to call computer agent");
           const result = await callComputerAgent(this.env, prompt, this.apiKey);
           console.log("Got back results from computer");
-          return { message: result.message, success: result.success, error: result.error };
+          return { message: result.message, success: result.success, error: result.error, result, };
         }
       }),
       search_web: tool({
