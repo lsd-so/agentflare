@@ -77,7 +77,31 @@
 	 * Static Assets
 	 * https://developers.cloudflare.com/workers/static-assets/binding/
 	 */
-	"assets": { "directory": "./assets/", "binding": "ASSETS", "not_found_handling": "single-page-application", "run_worker_first": true },
+	"assets": {
+		  "directory": "./assets/",
+		  "binding": "ASSETS",
+		  "not_found_handling": "single-page-application",
+		  "run_worker_first": [
+		    "/chat",
+		    "/singleton",
+		    "/otter.png",
+		    "/screenshot",
+		    "/vnc",
+		    "/websockify",
+		    "vnc.html",
+		    "/defaults.json",
+		    "/mandatory.json",
+		    "/package.json",
+		    "/app/*",
+		    "/core/*",
+		    "/vendor/pako/*",
+		    "/app/images/*",
+		    "/app/sounds/*",
+		    "/json/version",
+		    "/devtools/browser/*",
+		    "/title"
+		  ]
+	},
 
 	/**
 	 * Service Bindings (communicate between multiple Workers)
