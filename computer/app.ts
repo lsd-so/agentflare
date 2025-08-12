@@ -38,6 +38,7 @@ const getComputerTools = () => {
     screenshot: tool({
       description: 'Take a screenshot of the desktop to see what is currently displayed',
       parameters: z.object({}),
+      inputSchema: z.object({}),
       execute: async () => {
         console.log(`🖥️ Executing screenshot tool`);
         instantiateConnection();
@@ -53,6 +54,10 @@ const getComputerTools = () => {
     click: tool({
       description: 'Click at specific coordinates on the desktop',
       parameters: z.object({
+        x: z.number().describe('X coordinate to click'),
+        y: z.number().describe('Y coordinate to click')
+      }),
+      inputSchema: z.object({
         x: z.number().describe('X coordinate to click'),
         y: z.number().describe('Y coordinate to click')
       }),
@@ -79,6 +84,9 @@ const getComputerTools = () => {
     type: tool({
       description: 'Type text (keyboard input)',
       parameters: z.object({
+        text: z.string().describe('Text to type')
+      }),
+      inputSchema: z.object({
         text: z.string().describe('Text to type')
       }),
       execute: async ({ text }) => {
@@ -108,6 +116,9 @@ const getComputerTools = () => {
     key: tool({
       description: 'Press a specific key or key combination',
       parameters: z.object({
+        key: z.string().describe('Key to press (e.g., "Enter", "Tab", "Ctrl+C", "Alt+F4")')
+      }),
+      inputSchema: z.object({
         key: z.string().describe('Key to press (e.g., "Enter", "Tab", "Ctrl+C", "Alt+F4")')
       }),
       execute: async ({ key }) => {
@@ -185,6 +196,10 @@ const getComputerTools = () => {
         direction: z.enum(['up', 'down', 'left', 'right']).describe('Direction to scroll'),
         amount: z.number().optional().describe('Amount to scroll (default: 3)')
       }),
+      inputSchema: z.object({
+        direction: z.enum(['up', 'down', 'left', 'right']).describe('Direction to scroll'),
+        amount: z.number().optional().describe('Amount to scroll (default: 3)')
+      }),
       execute: async ({ direction, amount = 3 }) => {
         console.log(`📜 Executing scroll tool: ${direction} ${amount}x`);
         instantiateConnection();
@@ -221,6 +236,10 @@ const getComputerTools = () => {
     move: tool({
       description: 'Move mouse to specific coordinates without clicking',
       parameters: z.object({
+        x: z.number().describe('X coordinate to move to'),
+        y: z.number().describe('Y coordinate to move to')
+      }),
+      inputSchema: z.object({
         x: z.number().describe('X coordinate to move to'),
         y: z.number().describe('Y coordinate to move to')
       }),
