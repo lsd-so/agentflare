@@ -23,13 +23,18 @@ sendButton.addEventListener('click', sendMessage);
 function addMessage(content, isUser = false) {
   const messageDiv = document.createElement('div');
   messageDiv.style.display = 'flex';
-  messageDiv.style.alignItems = 'flex-start';
+  messageDiv.style.alignItems = 'flex-end';
   if (isUser) {
     messageDiv.style.justifyContent = 'flex-end';
   }
   const contentDiv = document.createElement('div');
   contentDiv.classList.add('nes-balloon');
   contentDiv.classList.add(isUser ? 'from-right' : 'from-left');
+  if (isUser) {
+    contentDiv.style.marginRight = '32px'
+  } else {
+    contentDiv.style.marginLeft = '32px'
+  }
   const contentLines = content.split('\n');
   contentLines.forEach((line, idx) => {
     contentDiv.appendChild(document.createTextNode(line));
