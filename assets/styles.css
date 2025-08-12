@@ -33,8 +33,7 @@ body {
 
 #messages {
     flex: 1;
-    padding-top: 8px;
-    padding-bottom: 8px;
+    padding: 8px;
     overflow-y: scroll;
 }
 
