@@ -30,7 +30,7 @@ This was inspired by the recent [OpenAI Agent](https://openai.com/index/introduc
 
 ### Search example
 
-Here is an example of using search to get some news
+![Using search to look up news related to Cloudflare and bots](assets/search_usage.gif)
 
 ### Browser example
 
