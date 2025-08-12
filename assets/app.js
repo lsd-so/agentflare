@@ -31,9 +31,9 @@ function addMessage(content, isUser = false) {
   contentDiv.classList.add('nes-balloon');
   contentDiv.classList.add(isUser ? 'from-right' : 'from-left');
   if (isUser) {
-    contentDiv.style.marginRight = '32px'
+    contentDiv.style.marginRight = '96px'
   } else {
-    contentDiv.style.marginLeft = '32px'
+    contentDiv.style.marginLeft = '96px'
   }
   const contentLines = content.split('\n');
   contentLines.forEach((line, idx) => {
