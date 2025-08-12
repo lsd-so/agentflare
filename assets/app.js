@@ -45,9 +45,13 @@ async function sendMessage() {
   if (!message) return;
   if (!apiKey) {
     addMessage('Please enter your Anthropic API key first.');
+    messageInput.classList.add('is-error');
+    apiKeyInput.classList.add('is-warning');
     return;
   }
   
+  messageInput.classList.remove('is-error');
+  apiKeyInput.classList.remove('is-warning');
   addMessage(message, true);
   messageInput.value = '';
   messageInput.style.height = 'auto';
