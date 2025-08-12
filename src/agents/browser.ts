@@ -32,17 +32,17 @@ export class BrowserAgent {
 
       if (result.success) {
         return {
-          // ...result,
+          result,
           success: true,
           message: result.message
-        };
+        } as any;
       } else {
         return {
-          // ...result,
+          result,
           success: false,
           message: 'Failed to process browser task',
           error: result.error
-        };
+        } as any;
       }
     } catch (error) {
       return {

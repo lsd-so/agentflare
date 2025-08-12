@@ -409,7 +409,7 @@ Use these tools when the user's request requires their capabilities. You can use
 
       console.log("Returning a result");
       return {
-        /* ...result, */
+        result,
         success: true,
         message: result.text,
         taskType: 'llm_powered',
@@ -418,7 +418,7 @@ Use these tools when the user's request requires their capabilities. You can use
           toolResults: result.toolResults
         },
         executionTime: Date.now() - startTime
-      };
+      } as any;
 
     } catch (error) {
       console.error('LLM processing error:', error);
