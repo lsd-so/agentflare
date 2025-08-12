@@ -12,8 +12,6 @@ RUN apk --no-cache add xvfb xfce4 xfce4-terminal supervisor sudo \
     && echo "alpine:alpine" | /usr/sbin/chpasswd \
     && echo "alpine ALL=NOPASSWD: ALL" >> /etc/sudoers
 
-RUN bun add express jimp vnc-rfb-client
-
 RUN rm -rf /apk /tmp/* /var/cache/apk/*
 
 USER alpine
@@ -46,5 +44,7 @@ EXPOSE $VNC_PORT $NOVNC_PORT $EXPRESS_PORT
 COPY supervisord.conf /etc/supervisord.conf
 
 COPY app.ts /home/alpine/app.ts
+
+RUN bun add express jimp vnc-rfb-client ai@5.0.2 @ai-sdk/anthropic@2.0.0 zod@4.0.14
 
 CMD ["sudo","/usr/bin/supervisord","-c","/etc/supervisord.conf"]
