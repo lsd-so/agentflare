@@ -28,7 +28,7 @@ computerRoutes.get("/websockify", async (c) => {
 });
 
 // VNC HTML page
-computerRoutes.get("vnc.html", async (c) => {
+computerRoutes.get("/vnc.html", async (c) => {
   const container = getContainer(c.env.COMPUTER_CONTAINER);
   return await container.fetch(switchPort(c.req.raw, 6080));
 });
