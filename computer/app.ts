@@ -24,9 +24,7 @@ const instantiateConnection = () => {
     client.on('frameUpdated', async (data) => {
       counter += 1;
       const image = new Jimp({ width: client.clientWidth, height: client.clientHeight, data: client.getFb() })
-      // image.resize({ w: client.clientWidth * 0.5, h: client.clientHeight * 0.5 });
       lastScreenshot = await image.getBase64("image/jpeg");
-      counter += 1;
     });
   }
 }
@@ -262,6 +260,17 @@ const getComputerTools = () => {
     })
   };
 };
+
+app.get("/screenshot-counter", async (req, res) => {
+  instantiateConnection();
+
+  while (!lastScreenshot) {
+    // If there is no screenshot yet, wait a jiffy so a screenshot is available for sure
+    await new Promise(resolve => setTimeout(resolve, 250));
+  }
+
+  res.send(`Screenshot<${counter}>:${lastScreenshot}`);
+})
 
 app.get("/screenshot", async (req, res) => {
   instantiateConnection();
