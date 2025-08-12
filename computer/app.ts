@@ -29,10 +29,11 @@ const instantiateConnection = () => {
 app.get("/screenshot", async (req, res) => {
   instantiateConnection();
 
-  if (!lastScreenshot) {
-    // If there is no screenshot yet, wait a bit more than a second so a screenshot is available for sure
-    await new Promise(resolve => setTimeout(resolve, 1250));
+  while (!lastScreenshot) {
+    // If there is no screenshot yet, wait a jiffy so a screenshot is available for sure
+    await new Promise(resolve => setTimeout(resolve, 250));
   }
+
   res.send(`Screenshot:${lastScreenshot}`);
 })
 
