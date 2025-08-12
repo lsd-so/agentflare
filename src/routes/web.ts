@@ -49,9 +49,4 @@ webRoutes.get("/singleton", async (c) => {
   return await container.fetch(modifiedRequest);
 });
 
-// Serve the NES-style otter
-webRoutes.get("/otter.png", async (c) => {
-  return c.env.ASSETS.fetch(c.req.raw);
-})
-
 export default webRoutes;

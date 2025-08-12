@@ -84,7 +84,6 @@
 		  "run_worker_first": [
 		    "/chat",
 		    "/singleton",
-		    "/otter.png",
 		    "/screenshot",
 		    "/vnc",
 		    "/websockify",
