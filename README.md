@@ -25,8 +25,6 @@ This was inspired by the recent [OpenAI Agent](https://openai.com/index/introduc
   * [Using Chromium](#using-chromium)
   * [Using computer](#using-computer)
 * [Developing](#developing)
-  * [Running on your own Cloudflare account](#running-on-your-own-cloudflare-account)
-  * [Running locally with miniflare](#running-locally-with-miniflare)
 
 ## Usage
 
@@ -66,8 +64,6 @@ This utilizes some of the same dependencies as [Anthropic's computer use](https:
 
 ## Developing
 
-### Running on your own Cloudflare account
-
 First, install dependencies.
 
 ```bash
@@ -97,5 +93,3 @@ Deployed agentflare triggers (0.34 sec)
   Done in 225.40s.
 🏁 Wrangler Action completed
 ```
-
-### Running locally with miniflare
