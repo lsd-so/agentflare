@@ -11,6 +11,8 @@ This project provides an agent that can use a [web browser](#using-chromium) and
 
 This was inspired by the recent [OpenAI Agent](https://openai.com/index/introducing-chatgpt-agent/) and how its rather simple capabilities were constrained in terms of available usages.
 
+> Pro users have 400 messages per month, while other paid users get 40 messages monthly, with additional usage available via flexible credit-based options.
+
 ## Contents
 
 * [Usage](#usage)
