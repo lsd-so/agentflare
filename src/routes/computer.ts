@@ -10,6 +10,12 @@ computerRoutes.get("/screenshot", async (c) => {
   return await container.fetch(switchPort(c.req.raw, 3000));
 });
 
+// Screenshot endpoint - forwards to computer container
+computerRoutes.get("/screenshot-counter", async (c) => {
+  const container = getContainer(c.env.COMPUTER_CONTAINER);
+  return await container.fetch(switchPort(c.req.raw, 3000));
+});
+
 // VNC web interface endpoint
 computerRoutes.get("/vnc", async (c) => {
   const container = getContainer(c.env.COMPUTER_CONTAINER);
