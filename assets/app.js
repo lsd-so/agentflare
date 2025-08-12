@@ -26,7 +26,7 @@ function addMessage(content, isUser = false) {
     messageDiv.style.display = 'flex';
     messageDiv.style.justifyContent = 'flex-end';
   }
-  messageDiv.innerHTML = \`<div class="nes-balloon \${isUser ? 'from-right' : 'from-left'}">\${content.replaceAll('\\n', '<br/>')}</div>\`;
+  messageDiv.innerHTML = `<div class="nes-balloon ${isUser ? 'from-right' : 'from-left'}">${content.replaceAll('\n', '<br/>')}</div>`;
   
   // Remove initial message if it exists
   const initial = document.querySelector('#initial');
@@ -70,10 +70,10 @@ async function sendMessage() {
     if (data.success) {
       addMessage(data.message);
     } else {
-      addMessage(\`Error: \${data.error || 'Something went wrong'}\`);
+      addMessage(`Error: ${data.error || 'Something went wrong'}`);
     }
   } catch (error) {
-    addMessage(\`Error: \${error.message}\`);
+    addMessage(`Error: ${error.message}`);
   } finally {
     loading.style.display = 'none';
     sendButton.disabled = false;
