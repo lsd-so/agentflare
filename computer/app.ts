@@ -43,7 +43,7 @@ const getComputerTools = () => {
         instantiateConnection();
 
         while (!lastScreenshot) {
-          // If there is no screenshot yet, wait a jiffy so a screenshot is available for sure
+          // If there is no screenshot yet, wait a jiffy so a screenshot is available
           await new Promise(resolve => setTimeout(resolve, 250));
         }
 
