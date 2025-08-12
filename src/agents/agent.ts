@@ -180,8 +180,7 @@ export class MainAgent {
         }),
         execute: async ({ prompt }) => {
           console.log("Going to call computer agent");
-          const agent = await callComputerAgent(this.env, prompt, this.apiKey);
-          const result = await agent.processWithLLM(prompt);
+          const result = await callComputerAgent(this.env, prompt, this.apiKey);
           console.log("Got back results from computer");
           return { message: result.message, success: result.success, error: result.error };
         }
