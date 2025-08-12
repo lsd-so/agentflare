@@ -26,7 +26,25 @@ function addMessage(content, isUser = false) {
     messageDiv.style.display = 'flex';
     messageDiv.style.justifyContent = 'flex-end';
   }
-  messageDiv.innerHTML = `<div class="nes-balloon ${isUser ? 'from-right' : 'from-left'}">${content.replaceAll('\n', '<br/>')}</div>`;
+  const contentDiv = document.createElement('div');
+  const contentLines = content.split('\n');
+  contentLines.forEach((line, idx) => {
+    contentDiv.appendChild(document.createTextNode(line));
+    if (idx !== contentLines.length - 1) {
+      contentDiv.appendChild(document.createElement('br'));
+    }
+  });
+
+  const authorEl = document.createElement('i');
+  authorEl.classList.add('nes-bcrikko');
+
+  if (!isUser) {
+    messageDiv.appendChild(authorEl);
+    messageDiv.appendChild(contentDiv);
+  } else {
+    messageDiv.appendChild(contentDiv);
+    messageDiv.appendChild(authorEl);
+  }
   
   // Remove initial message if it exists
   const initial = document.querySelector('#initial');
