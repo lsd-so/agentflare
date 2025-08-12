@@ -28,6 +28,7 @@ webRoutes.post("/chat", async (c) => {
       data: response.data,
       error: response.error,
       executionTime: response.executionTime,
+      response,
     });
   } catch (error) {
     return c.json({
