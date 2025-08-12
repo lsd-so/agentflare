@@ -27,7 +27,7 @@ function addMessage(content, isUser = false) {
     messageDiv.style.justifyContent = 'flex-end';
   }
   const contentDiv = document.createElement('div');
-  contentDiv.classList.add('nes-bubble');
+  contentDiv.classList.add('nes-balloon');
   contentDiv.classList.add(isUser ? 'from-right' : 'from-left');
   const contentLines = content.split('\n');
   contentLines.forEach((line, idx) => {
