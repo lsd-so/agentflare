@@ -374,7 +374,7 @@ app.post('/agent', async (req, res) => {
       await new Promise(resolve => setTimeout(resolve, 250));
     }
 
-    // Get computer tools
+    // Getting computer tools
     const tools = getComputerTools();
 
     // Create Anthropic client
