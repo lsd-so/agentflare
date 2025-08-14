@@ -1,5 +1,7 @@
 # Agentflare
 
+![Otter as a reference to Cloudflare mascot](assets/otter.png)
+
 This project provides an agent that can use a [web browser](#using-chromium) and computer to fulfill tasks specified by a user using Cloudflare [Workers](https://developers.cloudflare.com/workers/) plus [containers](https://developers.cloudflare.com/containers/).
 
 This was inspired by the [OpenAI Agent](https://openai.com/index/introducing-chatgpt-agent/) and how its rather simple capabilities were constrained in terms of available usages.
