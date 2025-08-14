@@ -106,6 +106,8 @@ import puppeteer from 'puppeteer';
 
 ### Using computer
 
+If you're unfamiliar with [Anthropic's computer use](https://github.com/anthropics/anthropic-quickstarts/tree/main/computer-use-demo), here's a simplified version of how it looks under the hood (minus the [ineditable configuration](https://github.com/anthropics/anthropic-quickstarts/blob/a78013a3c8d7c120d2ad6cfb9f6f40edab4c4815/computer-use-demo/computer_use_demo/tools/computer.py#L89)).
+
 ```mermaid
 flowchart TD
     A[Goal] -->|Deconstruct| B(Plan)
@@ -118,7 +120,11 @@ flowchart TD
     F -->|Return result| C
 ```
 
-This utilizes some of the same dependencies as [Anthropic's computer use](https://github.com/anthropics/anthropic-quickstarts/tree/main/computer-use-demo)
+So, first, there needs to be a computer that be tinkered with hence spinning up a [VNC server](https://github.com/lsd-so/agentflare/blob/main/computer/supervisord.conf#L181) that can be connected to by web browser using NoVNC (as shown below):
+
+![Demo of NoVNC controlling a remote computer](assets/novnc_demo.gif)
+
+Or by using a [JavaScript client](https://www.npmjs.com/package/vnc-rfb-client) with its usage being shown in [`computer/app.ts`](https://github.com/lsd-so/agentflare/blob/main/computer/app.ts#L20).
 
 ## Developing
 
