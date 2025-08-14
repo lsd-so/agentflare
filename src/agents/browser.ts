@@ -10,7 +10,6 @@ export class BrowserAgent {
     this.apiKey = apiKey || '';
   }
 
-
   async processWithLLM(prompt: string): Promise<{ success: boolean; message: string; error?: string }> {
     if (!this.apiKey) {
       return { success: false, message: 'API key required for LLM functionality', error: 'Missing API key' };
