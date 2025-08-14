@@ -120,7 +120,7 @@ flowchart TD
     F -->|Return result| C
 ```
 
-So, first, there needs to be a computer that be tinkered with hence spinning up a [VNC server](https://github.com/lsd-so/agentflare/blob/main/computer/supervisord.conf#L181) that can be connected to by web browser using NoVNC (as shown below):
+So, first, there needs to be a computer that be tinkered with hence spinning up a [VNC server](https://github.com/lsd-so/agentflare/blob/main/computer/supervisord.conf#L181) that can be connected to by web browser using NoVNC (as shown below) at `https://agentflare.<your_account_id>.workers.dev/vnc.html`:
 
 ![Demo of NoVNC controlling a remote computer](assets/novnc_demo.gif)
 
@@ -151,7 +151,7 @@ At the end of the output, you should see the URL you can open in your browser to
 ```
 ...
 Deployed agentflare triggers (0.34 sec)
-    https://agentflare.account_id.workers.dev      <---- This
+    https://agentflare.<your_account_id>.workers.dev      <---- This
   Current Version ID: some-pretty-cool-uuid
   Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
   Done in 225.40s.
