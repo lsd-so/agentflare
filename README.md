@@ -13,7 +13,7 @@ This was inspired by the recent [OpenAI Agent](https://openai.com/index/introduc
   * [Browser example](#browser-example)
   * [Computer example](#computer-example)
   * [Search and browser example](#search-and-browser-example)
-* [Architecture](#explanation)
+* [Architecture](#architecture)
   * [Using Chromium](#using-chromium)
   * [Using computer](#using-computer)
 * [Developing](#developing)
@@ -46,7 +46,7 @@ Here's an example of using search results to fetch links and then a browser to o
 
 ![Using search and a browser together](assets/search_and_browser_usage.gif)
 
-## Explanation
+## Architecture
 
 Breakdown of how computer use is architected. Shout out to openai computer using agent only needing browser. Then breakdown of this
 
