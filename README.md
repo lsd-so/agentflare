@@ -1,6 +1,6 @@
 # Agentflare
 
-This project provides an agent that can use a [web browser](#using-chromium) and/or computer to fulfill tasks specified by a user using Cloudflare [Workers](https://developers.cloudflare.com/workers/) and [containers](https://developers.cloudflare.com/containers/).
+This project provides an agent that can use a [web browser](#using-chromium) and computer to fulfill tasks specified by a user using Cloudflare [Workers](https://developers.cloudflare.com/workers/) plus [containers](https://developers.cloudflare.com/containers/).
 
 This was inspired by the recent [OpenAI Agent](https://openai.com/index/introducing-chatgpt-agent/) and how its rather simple capabilities were constrained in terms of available usages.
 
