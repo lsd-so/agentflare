@@ -50,7 +50,7 @@ Here's an example of using search results to fetch links and then a browser to o
 
 ## Architecture
 
-There's [plenty](https://langchain-ai.github.io/langgraph/concepts/multi_agent/) of [examples](https://www.anthropic.com/engineering/multi-agent-research-system) of [multi-agent architectures](https://letmegooglethat.com/?q=multi-agent+architecture) but the underlying premise is simple - why overwhelm the context of a single LLM when you can scope tasks into smaller accomplishable steps?
+There's [plenty](https://langchain-ai.github.io/langgraph/concepts/multi_agent/) of [examples](https://www.anthropic.com/engineering/multi-agent-research-system) of [multi-agent architectures](https://www.google.com/search?q=multi-agent+architecture) but the underlying premise is simple - why overwhelm the context of a single LLM when you can scope tasks into smaller accomplishable steps?
 
 ```mermaid
 flowchart TD
