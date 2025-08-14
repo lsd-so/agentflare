@@ -49,7 +49,9 @@ Here's an example of using a computer to run a command inside the terminal that'
 
 ### Search and browser example
 
-Here is an example of using search to get links and then get html/markdown to then summarize
+Here's an example of using search results to fetch links and then a browser to obtain the content to provide a summary of:
+
+![Using search and a browser together](assets/search_and_browser_usage.gif)
 
 ## Explanation
 
