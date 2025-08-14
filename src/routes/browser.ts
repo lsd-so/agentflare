@@ -18,11 +18,11 @@ browserRoutes.get("/devtools/browser/*", async (c) => {
 
 // Title endpoint for debugging - forwards to browser container
 browserRoutes.get("/title", async (c) => {
-  // const url = c.req.query('url');
+  const url = c.req.query('url');
 
-  // if (!url) {
-  //   return c.json({ success: false, error: 'URL query parameter required' }, 400);
-  // }
+  if (!url) {
+    return c.json({ success: false, error: 'URL query parameter required' }, 400);
+  }
 
   const container = getContainer(c.env.BROWSER_CONTAINER);
   return await container.fetch(switchPort(c.req.raw, 3000));
