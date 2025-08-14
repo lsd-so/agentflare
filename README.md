@@ -48,7 +48,19 @@ Here's an example of using search results to fetch links and then a browser to o
 
 ## Architecture
 
-Breakdown of how computer use is architected. Shout out to openai computer using agent only needing browser. Then breakdown of this
+There's [plenty](https://langchain-ai.github.io/langgraph/concepts/multi_agent/) of [examples](https://www.anthropic.com/engineering/multi-agent-research-system) of [multi-agent architectures](https://letmegooglethat.com/?q=multi-agent+architecture) but the underlying premise is simple - why overwhelm the context of a single LLM when you can scope tasks into smaller accomplishable steps?
+
+```mermaid
+flowchart TD
+    A[Prompt] -->|Deconstruct| B{Plan}
+    B -->|One| C[Read operation]
+    B -->|Two| D[Write operation]
+    B -->|Three| E[Complete]
+```
+
+Otherwise you end up with something like drawing an owl.
+
+![Step one draw circles followed by step two showing an entire own](assets/owl.png)
 
 ### Using Chromium
 
