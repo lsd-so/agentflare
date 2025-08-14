@@ -43,7 +43,7 @@ Here's an example of using a web browser to get page content in order to summari
 
 ### Computer example
 
-Here's an example of using a computer to run a command inside the terminal (accessed via NoVNC server hosted on a Cloudflare container):
+Here's an example of using a computer to run a command inside the terminal that's opened using a NoVNC server hosted on a Cloudflare container:
 
 ![Using a computer to run a command inside the terminal](assets/computer_usage.gif)
 
