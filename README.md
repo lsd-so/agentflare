@@ -53,9 +53,12 @@ There's [plenty](https://langchain-ai.github.io/langgraph/concepts/multi_agent/)
 ```mermaid
 flowchart TD
     A[Prompt] -->|Deconstruct| B{Plan}
-    B -->|If relevant| C[Search engine]
-    B -->|If relevant| D[Web browser]
-    B -->|If relevant| E[Computer]
+    B -->|Delegate to| C[Search agent]
+	C -->|Return result| B
+    B -->|Delegate to| D[Browser agent]
+	D -->|Return result| B
+    B -->|Delegate to| E[Computer agent]
+	E -->|Return result| B
 ```
 
 Otherwise you end up trying to one-shot like you're drawing an owl.
@@ -102,6 +105,18 @@ import puppeteer from 'puppeteer';
 ```
 
 ### Using computer
+
+```mermaid
+flowchart TD
+    A[Goal] -->|Deconstruct| B(Plan)
+    B -->|Delegate to| C{Computer Agent}
+    D -->|Return result| C
+    C -->|Call if relevant| D[Keyboard tool]
+    C -->|Call if relevant| E[Mouse tool]
+    E -->|Return result| C
+    C -->|Call if relevant| F[Screenshot tool]
+    F -->|Return result| C
+```
 
 This utilizes some of the same dependencies as [Anthropic's computer use](https://github.com/anthropics/anthropic-quickstarts/tree/main/computer-use-demo)
 
