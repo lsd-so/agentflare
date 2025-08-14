@@ -11,7 +11,17 @@ body {
 
 #banner {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#github-share {
+    display: flex;
+    align-items: center;
+}
+
+#github-share span {
+    color: black;
 }
 
 #api-key-container {
