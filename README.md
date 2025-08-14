@@ -4,14 +4,11 @@
 
 This project provides an agent that can use a [web browser](#using-chromium) and a [computer](#using-computer) to fulfill tasks specified by a user using Cloudflare [Workers](https://developers.cloudflare.com/workers/) plus [Containers](https://developers.cloudflare.com/containers/).
 
-## Why?
-
-This was inspired by the [OpenAI Agent](https://openai.com/index/introducing-chatgpt-agent/) and how its rather simple capabilities were constrained in terms of available usages.
-
-> Pro users have 400 messages per month, while other paid users get 40 messages monthly, with additional usage available via flexible credit-based options.
-
 ## Contents
 
+* [Why](#why)
+  * [General](#general)
+  * [Expensive](#expensive)
 * [Usage](#usage)
   * [Search example](#search-example)
   * [Browser example](#browser-example)
@@ -21,6 +18,18 @@ This was inspired by the [OpenAI Agent](https://openai.com/index/introducing-cha
   * [Using Chromium](#using-chromium)
   * [Using computer](#using-computer)
 * [Running](#running)
+
+## Why?
+
+### General
+
+This was motivated by the [OpenAI Agent](https://openai.com/index/introducing-chatgpt-agent/) and how its rather simple capabilities were constrained in terms of available usages.
+
+> Pro users have 400 messages per month, while other paid users get 40 messages monthly, with additional usage available via flexible credit-based options.
+
+### Expensive
+
+While Cloudflare does offer a [product for headless browsers](https://developers.cloudflare.com/browser-rendering/), their [pricing](https://developers.cloudflare.com/browser-rendering/platform/pricing/) can be a bit steep so here we run a [chromium container](https://github.com/lsd-so/agentflare/blob/main/browser/Dockerfile) (see [here](https://hub.docker.com/r/zenika/alpine-chrome) for the inspiration).
 
 ## Usage
 
@@ -72,8 +81,6 @@ Otherwise you end up trying to one-shot like you're drawing an owl.
 ![Step one draw circles followed by step two showing an entire own](assets/owl.png)
 
 ### Using Chromium
-
-While Cloudflare does offer a [product for headless browsers](https://developers.cloudflare.com/browser-rendering/), their [pricing](https://developers.cloudflare.com/browser-rendering/platform/pricing/) can be a bit steep so here we run a [chromium container](https://github.com/lsd-so/agentflare/blob/main/browser/Dockerfile) (see [here](https://hub.docker.com/r/zenika/alpine-chrome) for the inspiration).
 
 Due to a [security](https://chromium-review.googlesource.com/c/chromium/src/+/952522) measure that prevents chromium from arbitrarily being accessed or controlled remotely, the image proxies requests with [nginx](https://github.com/lsd-so/agentflare/blob/main/browser/nginx.conf#L26) to mask the actual traffic origin. This allows you to run or debug from a machine that's not part of your Cloudflare deployment like so:
 
