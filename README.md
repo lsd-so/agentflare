@@ -53,18 +53,52 @@ There's [plenty](https://langchain-ai.github.io/langgraph/concepts/multi_agent/)
 ```mermaid
 flowchart TD
     A[Prompt] -->|Deconstruct| B{Plan}
-    B -->|One| C[Read operation]
-    B -->|Two| D[Write operation]
-    B -->|Three| E[Complete]
+    B -->|If relevant| C[Search engine]
+    B -->|If relevant| D[Web browser]
+    B -->|If relevant| E[Computer]
 ```
 
-Otherwise you end up with something like drawing an owl.
+Otherwise you end up trying to one-shot like you're drawing an owl.
 
 ![Step one draw circles followed by step two showing an entire own](assets/owl.png)
 
 ### Using Chromium
 
-[security](https://chromium-review.googlesource.com/c/chromium/src/+/952522)
+While Cloudflare does offer a [product for headless browsers](https://developers.cloudflare.com/browser-rendering/), their [pricing](https://developers.cloudflare.com/browser-rendering/platform/pricing/) can be a bit steep so here we run a [chromium container](https://github.com/lsd-so/agentflare/blob/main/browser/Dockerfile) (see [here](https://hub.docker.com/r/zenika/alpine-chrome) for the inspiration).
+
+Due to a [security](https://chromium-review.googlesource.com/c/chromium/src/+/952522) measure that prevents chromium from arbitrarily being accessed or controlled remotely, the image proxies requests with [nginx](https://github.com/lsd-so/agentflare/blob/main/browser/nginx.conf#L26) to mask the actual traffic origin. This allows you to run or debug from a machine that's not part of your Cloudflare deployment like so:
+
+```typescript
+import puppeteer from 'puppeteer';
+
+(async () => {
+  const result = await fetch("https://<your deployment identifier>.workers.dev/json/version").then(res => res.json());
+
+  // Launch the browser and open a new blank page
+  const browser = await puppeteer.connect({
+    browserWSEndpoint: result.webSocketDebuggerUrl.replaceAll('ws://localhost', 'wss://<your deployment identifier>.workers.dev')
+  });
+
+  const page = await browser.newPage();
+
+  // Navigate the page to a URL
+  await page.goto('https://news.ycombinator.com/');
+
+  // Set screen size
+  await page.setViewport({ width: 1080, height: 1024 });
+
+  // Locate the full title with a unique string
+  const textSelector = await page.waitForSelector(
+    'title',
+  );
+  const fullTitle = await textSelector?.evaluate(el => el.textContent);
+
+  // Print the full title
+  console.log('The title of this page is "%s".', fullTitle);
+
+  await browser.close();
+})();
+```
 
 ### Using computer
 
