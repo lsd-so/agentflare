@@ -362,7 +362,6 @@ app.get('/agent', async (req, res) => {
       return res.status(400).json({ success: false, error: 'API key required' });
     }
 
-    console.log("starting connection");
     // Ensure VNC connection is ready
     instantiateConnection();
 
