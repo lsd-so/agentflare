@@ -18,13 +18,13 @@ let counter = 0;
 const instantiateConnection = () => {
   if (client === undefined || counter === 0) {
     client = new VncClient();
-    client.changeFps(1);
+    client.changeFps(5);
     client.connect({ host: '127.0.0.1', port: 5900, password: 'alpinelinux' });
 
     client.on('frameUpdated', async (data) => {
       counter += 1;
       const image = new Jimp({ width: client.clientWidth, height: client.clientHeight, data: client.getFb() })
-      lastScreenshot = await image.getBase64("image/jpeg");
+      lastScreenshot = await image.getBase64("image/png");
     });
   }
 }
@@ -260,17 +260,6 @@ const getComputerTools = () => {
     })
   };
 };
-
-app.get("/screenshot-counter", async (req, res) => {
-  instantiateConnection();
-
-  while (!lastScreenshot) {
-    // If there is no screenshot yet, wait a jiffy so a screenshot is available for sure
-    await new Promise(resolve => setTimeout(resolve, 250));
-  }
-
-  res.send(`Screenshot<${counter}>:${lastScreenshot}`);
-})
 
 app.get("/screenshot", async (req, res) => {
   instantiateConnection();

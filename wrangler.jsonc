@@ -85,7 +85,6 @@
 		    "/chat",
 		    "/singleton",
 		    "/screenshot",
-		    "/screenshot-counter",
 		    "/vnc",
 		    "/websockify",
 		    "/vnc.html",
