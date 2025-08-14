@@ -19,6 +19,7 @@ body {
 #github-share {
     display: flex;
     align-items: center;
+    text-decoration: none;
 }
 
 #github-share span {
