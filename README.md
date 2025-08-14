@@ -20,7 +20,6 @@ This was inspired by the recent [OpenAI Agent](https://openai.com/index/introduc
   * [Browser example](#browser-example)
   * [Computer example](#computer-example)
   * [Search and browser example](#search-and-browser-example)
-  * [Browser and computer example](#browser-and-computer-example)
 * [Architecture](#explanation)
   * [Using Chromium](#using-chromium)
   * [Using computer](#using-computer)
@@ -32,23 +31,25 @@ This was inspired by the recent [OpenAI Agent](https://openai.com/index/introduc
 
 ### Search example
 
+Here's an example of doing web search to look up news related to Cloudflare and bots:
+
 ![Using search to look up news related to Cloudflare and bots](assets/search_usage.gif)
 
 ### Browser example
+
+Here's an example of using a web browser to get page content in order to summarize:
 
 ![Using a browser to get content related to Cloudflare and bots](assets/browser_usage.gif)
 
 ### Computer example
 
-Here is an example of using a terminal to run python
+Here's an example of using a computer to run a command inside the terminal (accessed via VNC server hosted on a Cloudflare container):
+
+![Using a computer to run a command inside the terminal](assets/computer_usage.gif)
 
 ### Search and browser example
 
 Here is an example of using search to get links and then get html/markdown to then summarize
-
-### Browser and computer example
-
-Here is an example of using a browser to get a code snippet and then running it on computer
 
 ## Explanation
 
