@@ -16,7 +16,7 @@ This was inspired by the [OpenAI Agent](https://openai.com/index/introducing-cha
 * [Architecture](#architecture)
   * [Using Chromium](#using-chromium)
   * [Using computer](#using-computer)
-* [Developing](#developing)
+* [Running](#running)
 
 ## Usage
 
@@ -126,7 +126,7 @@ So, first, there needs to be a computer that be tinkered with hence spinning up 
 
 Or by using a [JavaScript client](https://www.npmjs.com/package/vnc-rfb-client) with its usage being shown in [`computer/app.ts`](https://github.com/lsd-so/agentflare/blob/main/computer/app.ts#L20).
 
-## Developing
+## Running
 
 First, install dependencies.
 
