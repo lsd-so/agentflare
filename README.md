@@ -22,6 +22,8 @@ This was inspired by the [OpenAI Agent](https://openai.com/index/introducing-cha
 
 ## Usage
 
+You can view the app (till we sunset this on August 31st) at: https://agentflare.yev-81d.workers.dev/
+
 **Note:** Some of the below recordings have sections where it's loading cut out for viewability, the end-to-end one shotting is still true and various caching or optimizations can be applied to make live usage more alike the GIFs shown below.
 
 ### Search example
