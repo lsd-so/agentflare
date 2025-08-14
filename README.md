@@ -1,10 +1,3 @@
-## TODO
-
-- MCP server
-- Something in browser to check if exceeding context window is bc html and to instead get markdown
-- Something in computer to check if exceeding context window is bc screenshot and to instead clear prior messages/tool calls except for system/user/screenshot then proceed
-- Prompt engineering so examples below can have succinct inputs (w/o explicitly saying to use certain tool etc)
-
 # Agentflare
 
 This project provides an agent that can use a [web browser](#using-chromium) and/or computer to fulfill tasks specified by a user using Cloudflare [Workers](https://developers.cloudflare.com/workers/) and [containers](https://developers.cloudflare.com/containers/).
