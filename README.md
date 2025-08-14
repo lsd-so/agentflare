@@ -69,6 +69,7 @@ While Cloudflare does offer a [product for headless browsers](https://developers
 Due to a [security](https://chromium-review.googlesource.com/c/chromium/src/+/952522) measure that prevents chromium from arbitrarily being accessed or controlled remotely, the image proxies requests with [nginx](https://github.com/lsd-so/agentflare/blob/main/browser/nginx.conf#L26) to mask the actual traffic origin. This allows you to run or debug from a machine that's not part of your Cloudflare deployment like so:
 
 ```typescript
+// The below code can be run on your local machine while a browser is run in a Cloudflare container
 import puppeteer from 'puppeteer';
 
 (async () => {
