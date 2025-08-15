@@ -67,7 +67,7 @@ There's [plenty](https://langchain-ai.github.io/langgraph/concepts/multi_agent/)
 
 ```mermaid
 flowchart TD
-    A[Prompt] -->|Deconstruct| B{Plan}
+    A[Prompt] -->|Deconstruct| B{Top-level agent}
     B -->|Delegate to| C[Search agent]
 	C -->|Return result| B
     B -->|Delegate to| D[Browser agent]
@@ -124,7 +124,7 @@ If you're unfamiliar with [Anthropic's computer use](https://github.com/anthropi
 ```mermaid
 flowchart TD
     A[Goal] -->|Deconstruct| B(Plan)
-    B -->|Delegate to| C{Computer Agent}
+    B -->|Handled by| C{Computer Agent}
     D -->|Return result| C
     C -->|Call if relevant| D[Keyboard tool]
     C -->|Call if relevant| E[Mouse tool]
