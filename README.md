@@ -68,7 +68,7 @@ There's [plenty](https://langchain-ai.github.io/langgraph/concepts/multi_agent/)
 ```mermaid
 flowchart TD
     A[Prompt] -->|Deconstruct| B{Top-level agent}
-    B -->|Delegate to| C[Search agent]
+    B -->|Delegate to| C[Search tool]
 	C -->|Return result| B
     B -->|Delegate to| D[Browser agent]
 	D -->|Return result| B
